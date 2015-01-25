@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<head>
+  <title>Ryan Blecher - Blog</title>
+  <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/default.css">
+  <link rel="stylesheet" type="text/css" href="../stylesheets/blog-stylesheet.css">
+</head>
+
+<main>
+  
+
+  <section>
+    <h1>Week 5 - Classes</h1>
+  <h2>Very classy...</h2>
+  <h4>January 25th, 2015</h4>
+    <p>
+      Ruby is a heavily class based language. Nearly everything you make or work with is an object created by a class. This may seem confusing at first, but when you think about how classes work and what they do, it makes more sense. A class lets you encapsulate realted information to be reused as many times as you want. Lets go with relating a class to a cookie cutter. You don't actually use a class for anything besides creating object, much in the same way you only use a cookie cutter to make shaped cookies. I really hope you don't eat the actual cookie cutter. A class lets you create many new objects of the same type, but each one created is its own individual object. A cookie cutter lets you make many cookies of similar type, but each cookie is its own separate cookie. If they were all the same you would only be making one cookie over and over again. Who wants to eat just one cookie?
+    </p>
+    <p>
+      We would use classes to keep our programs organized and non-repeating. We can may want to make a spaceship class in a video game we are making and this spaceship may have many properties. We probably need to set the spaceship's speed, size, power rating, name, and so on. Rather than write out those methods and call them every time, we can make a Spaceship class, which can make as many similar spaceships as we want without overwriting them.
+    </p>
+  <p>
+    class Spaceship<br />
+      &nbsp;def initialize name<br />
+      &nbsp;&nbsp;&nbsp;@name = name<br />
+      &nbsp;end<br /><br />
+
+      &nbsp;def stats<br />
+      &nbsp;&nbsp;if @name == "Starship Enterprise"<br />
+      &nbsp;&nbsp;&nbsp;puts "#{@name} is the name of the new spaceship."<br />
+      &nbsp;&nbsp;&nbsp;puts "Size: Length  642.51 Meters, Width 463.73 Meters, Height  195.26 Meters"<br />
+      &nbsp;&nbsp;&nbsp;puts "Speed: Warp 9.2\n\n"<br />
+      &nbsp;elsif @name == "Deathstar"<br />
+      &nbsp;&nbsp;&nbsp;puts "#{@name} is the name of the new spaceship."<br />
+      &nbsp;&nbsp;&nbsp;puts "Size: 120 km in diameter"<br />
+      &nbsp;&nbsp;&nbsp;puts "Speed: 1 space unit at Sublight speed.\n\n"<br />
+      &nbsp;else <br />
+      &nbsp;&nbsp;&nbsp;puts "#{@name} is the name of the new spaceship."<br />
+      &nbsp;&nbsp;&nbsp;puts "No data on that spaceship.\n\n"<br />
+      &nbsp;&nbsp;end<br />
+      &nbsp;end<br />
+    end<br /><br />
+
+enterprise = Spaceship.new "Starship Enterprise"<br />
+deathstar = Spaceship.new "Deathstar"<br />
+galaga = Spaceship.new "Galaga"<br />
+enterprise.stats<br />
+deathstar.stats<br />
+galaga.stats<br /><br />
+
+------OUTPUT------<br />
+Starship Enterprise is the name of the new spaceship.<br />
+Size: Length  642.51 Meters, Width 463.73 Meters, Height  195.26 Meters<br />
+Speed: Warp 9.2<br /><br />
+
+Deathstar is the name of the new spaceship.<br />
+Size: 120 km in diameter<br />
+Speed: 1 space unit at Sublight speed.<br /><br />
+
+Galaga is the name of the new spaceship.<br />
+No data on that spaceship.<br /><br />
+
+    </p>
+    <p>
+      In our spaceship class we keep data on each type of spaceship. You'll notice the initialize as the first method in the class. When you instantiate a new object of that class, it's the first method automatically run. Our Spaceship class lets us take the name as an argument when we create it. Then it does this funny thing with the @ symbol. What this does is take the input of name, and let the entire class use that variable. This is called an instance variable. If we didn't make it, the stats method wouldn't be able to access the variable 'name'. Speaking of our stats method, it returns statements about our spaceship's statistics based on the ship's name. I won't go into control flow, but the stats method looks at the value of name, then based on what it gets, it will return anything associated with that name. 
+    </p>
+        <p>
+      You may notice something funny when we create our spaceships. You see it's set equal to 'Spaceship.new'. Our spaceship class doesn't have a '.new' method! Well, this is what I was talking about a few minutes ago. When we make a new class by going 'class Spaceship', we are actually calling the class Class (wait.. what?!), which has the #new method. Classes inherit the properties from their parent classes, which goes back further than I will explain, but in this case it at least shows you why we can call a method we don't see. Once our spaceship object is created, then we can call it's #stats method to get information about it. Notice all we need is the 'name_of_the_object.stats'. The output returns only the information about that particular object, but partly because we wrote it that way. The main thing to see is that we have one class with one method and one instance variable, but the instance variable is a different value for each spaceship.
+    </p>
+
+  </section>
+</main>
