@@ -106,14 +106,13 @@ function draw()
 
   // checks for wins, then reloads the game.
   if (score1 >= 5){
-    alert("Player 1 Wins!");
     location.reload();
-
+    alert("Player 1 Wins!");
   }
 
   if (score2 >= 5) {
-    alert("Player 1 Wins!");
     location.reload();
+    alert("Player 1 Wins!");
   }
 
 
