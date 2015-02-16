@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>JavaScript Prototypes Cheat Sheet</title>
+  <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+  <link rel="stylesheet" type="text/css" href="stylesheets/cheat_sheet.css">
+</head>
+
+<main>
+  <header>
+    <h1>JavaScript Prototypes Cheat Sheet</h1>
+  </header>
+  <div id = "container">
+    <section>
+      <h1>What is a JavaScript Prototype?</h1>
+      <p>
+         JavaScript prototypes are similar to Ruby Classes. Each JS Prototype has a <em>Prototype Attribute</em> which can be thought of as a characteristic of an Object. A JS Prototype Attribute will be inherited when a new instance of the prototype is created. If you create another separate prototype, it will have it's own prototype attributes, but you can choose to have it inherit Prototype Attributes from another prototype. In simple terms, a JS Prototype is like the blueprint or skeleton of a JS object.
+      </p>
+      <pre class ="prettyprint lang-js">
+      function Animal(animalType, animalSound){
+        this.type = animalType;
+        this.sound = animalSound;
+      }
+
+      function Dog(dogName, dogBreed){
+        this.name = dogName;
+        this.breed = dogBreed;
+      }
+
+      Dog.prototype = new Animal("Dog", "Bark!");
+      var Fido = new Dog("Fido","Terrier");
+
+      Fido.sound // Should return "Bark!"
+      </pre>
+
+      <article>
+          <h1>Using the <b>Prototype</b> Property</h1>
+          <p>You can't add properties to a Prototype the same way you add properties to a JS Object. You can add properties to a Prototype by using the "Prototype Property".</p>
+          <pre class ="prettyprint lang-js">
+          function person(first, last, age, eyecolor) {
+              this.firstName = first;
+              this.lastName = last;
+              this.age = age;
+              this.eyeColor = eyecolor;
+          }
+          person.prototype.nationality = "English";
+          // This will add a nationality property to the person prototype.
+          </pre>
+      </article>
+
+      <article>
+          <h1>Object.prototype.hasOwnProperty()</h1>
+          <p>hasOwnProperty() detects if the called Object has that particular property and will return true. If the Object inherited the property it will return false.</p>
+          <pre class ="prettyprint lang-js">
+          function Animal(animalType, animalSound){
+            this.type = animalType;
+            this.sound = animalSound;
+          }
+
+          function Dog(dogName, dogBreed){
+            this.name = dogName;
+            this.breed = dogBreed;
+          }
+
+          Dog.prototype = new Animal("Dog", "Bark!");
+          var Fido = new Dog("Fido","Terrier");
+
+          Fido.hasOwnProperty('breed'); // This should return true.
+          Fido.hasOwnProperty('sound'); // This should return false.
+          </pre>
+      </article>
+
+<!--       <article>
+          <h1>Method</h1>
+          <p>Description</p>
+          <pre class ="prettyprint lang-js">
+          //Sample code
+          </pre>
+      </article> -->
+    </section>
+  </div>
+</main>
+
+
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+  <title>Ryan Blecher - TechBlog</title>
+  <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/default.css">
+  <link rel="stylesheet" type="text/css" href="../stylesheets/blog-stylesheet.css">
+</head>
+
+<main>
+  
+
+  <section>
+    <h1>Week 4 - Enumerable Methods</h1>
+  <h2>Lets sort 'em out.</h2>
+  <h4>January 18th, 2015</h4>
+    <p>
+      During Phase 0 this past week, we've been learning all about methods and working on stretching our figurative problem solving muscles. In my solutions I've had to use a combination of arrays, hashes, and these handy things called <em>Enumerables</em>. An Enumberable is a "collection of classes" that contain methods for searching and sorting. There are many interesting ones, but I'd like to take this time to talk about one.
+    </p>
+
+    <p>
+      <i>#group_by</i>
+       The <b>group_by</b> method traverses your array and then creates "groups" or a <i>hash</i> with keys based on what argument you passed into it. For example, if I had an array of numbers and wanted to separate them by even and odds, I could call this: <i>even_or_odd.group_by {|i| i%2}</i> <br />
+       That would take an array called even_or_odd, and then create a hash with two groups of separated even and odd numbers. Running it in IRB yields an ouput like this: <i>=> {1=>[1, 3, 5, 7, 9], 0=>[2, 4, 6, 8, 10]}</i>. 1 and 0 are the two hash keys. That's fine and dandy, but it doesn't make much sense to name them that. Hashes store their keys unsorted and those keys, as far as Ruby is concerned, are actually named opposite of true and false in our example. We can make things a little better by making our method call look like this:
+       <i>even_or_odd.group_by{|i| i%2==0 }</i>, which yields an output of <i>=> {false=>[1, 3, 5, 7, 9], true=>[2, 4, 6, 8, 10]}</i>. Now doesn't that look a bit better? At least the key/group names make more sense.
+    </p>
+
+    <p>
+      Here are a few more handy exmaples. Lets make an array like so: <br /><br />
+      <i>sentence = ["this","is","a","sentence","with","lots","of","words"]</i><br /><br />
+      Now we can search for only the words that contain a particular letter!.<br /n><br />
+      <i>sentence.group_by{|i| i.include?('w') }</i><br /><br />
+      This yields the following output..<br /n><br />
+      <i>=> {false=>["this", "is", "a", "sentence", "lots", "of"], true=>["with", "words"]}</i><br /><br />
+
+      One more example, which can be useful! Let us find out the length of all the words in our array!<br /><br />
+      <i>=> {4=>["this", "with", "lots"], 2=>["is", "of"], 1=>["a"], 8=>["sentence"], 5=>["words"]}</i><br /><br />
+        If we felt like it, we could sort out hash by key or just iterate through it and return a word of any length we desire. Just remember this method, because its potential is amazing!
+
+    </p>
+    
+  </section>
+</main>
