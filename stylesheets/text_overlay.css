@@ -1,15 +1,14 @@
 .article {
   margin-top: 20px;
-  padding: 10px, 0px, 5px, 0px;
-  height: 100px;
+  padding: 10px 0px 5px 0px;
+  height: 200px;
 }
 
 .section {
-  padding-top: 90px;
-  padding-bottom: 90px;
+  margin-top: 10px;
 }
 
-.section.header {
+.header {
   padding-top: 0px;
   padding-bottom: 218px;
   background-image: url(http://mgp.ru/static/template/tonkosti/countries-list-bg-space.jpg);
@@ -17,10 +16,17 @@
   background-size: cover;
   background-attachment: fixed;
 }
-.section.header.full-page {
+
+.header.full-page {
   position: relative;
   height: 100%;
   background-repeat: no-repeat;
+}
+
+.footer {
+  clear: both;
+  background: rgba(0,0,0,0.2);
+  padding: 5px 10px;
 }
 
 header {
@@ -30,14 +36,22 @@ header {
   transform: translate(-50%, -50%);
   color: white;
   text-align: center;
-
-
 }
+
 h1 {
   text-transform: uppercase;
   margin: 0;
-  font-size: 3rem;
+  font-size: 5em;
   white-space: nowrap;
+}
+
+h2{ 
+  text-align: center;
+}
+
+h3{ 
+  text-align: center;
+  margin: 0;
 }
 
 div {
@@ -45,6 +59,7 @@ div {
 }
 
 p {
+  text-align: center;
   margin: 0;
   font-size: 1.5rem;
 }
