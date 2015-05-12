@@ -1,7 +1,14 @@
+.aboutMe {
+  border:2px solid #000000;
+  border-radius: 100px;
+  display: block;
+  margin: 0px auto;
+  height: 200px;
+}
 .article {
   margin-top: 20px;
   padding: 10px 0px 5px 0px;
-  height: 200px;
+
 }
 
 .section {
@@ -29,6 +36,16 @@
   padding: 5px 10px;
 }
 
+.project-info {
+  background-color: #efefef;
+  min-height: 100px;
+}
+
+.project-description {
+  word-wrap: break-word;
+  
+}
+
 header {
   position: absolute;
   top: 50%;
@@ -54,12 +71,18 @@ h3{
   margin: 0;
 }
 
-div {
-  background-color: #696969;
-}
 
 p {
   text-align: center;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1rem;
+}
+
+img {
+  max-width:100%;
+  max-height:100%;
+}
+
+img a:hover {
+opacity: 0.3; /* 1 = 100%, 0 = 0% */
 }
