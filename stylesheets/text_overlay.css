@@ -1,3 +1,9 @@
+.article {
+  margin-top: 20px;
+  padding: 10px, 0px, 5px, 0px;
+  height: 100px;
+}
+
 .section {
   padding-top: 90px;
   padding-bottom: 90px;
@@ -6,7 +12,7 @@
 .section.header {
   padding-top: 0px;
   padding-bottom: 218px;
-  background-image: url(http://hw-cdn-prod-assets.webflow.com/52c7577ffb4a511d7d00004c/520fd0ad9de6909139000101_heroman.jpg);
+  background-image: url(http://mgp.ru/static/template/tonkosti/countries-list-bg-space.jpg);
   background-position: 50% 50%;
   background-size: cover;
   background-attachment: fixed;
@@ -33,6 +39,11 @@ h1 {
   font-size: 3rem;
   white-space: nowrap;
 }
+
+div {
+  background-color: #696969;
+}
+
 p {
   margin: 0;
   font-size: 1.5rem;
