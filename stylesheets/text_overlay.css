@@ -1,27 +1,22 @@
 .aboutMe {
   border:2px solid #000000;
-  border-radius: 100px;
   display: block;
   margin: 0px auto;
   height: 200px;
 }
 .article {
   margin-top: 20px;
-  padding: 10px 0px 5px 0px;
-
+  padding: 40px 0px 40px 0px;
 }
 
-.section {
-  margin-top: 10px;
-}
 
 .header {
   padding-top: 0px;
-  padding-bottom: 218px;
-  background-image: url(http://mgp.ru/static/template/tonkosti/countries-list-bg-space.jpg);
+  background-image: url(../images/ryan-bg.jpg);
   background-position: 50% 50%;
   background-size: cover;
   background-attachment: fixed;
+  z-index: -1;
 }
 
 .header.full-page {
@@ -30,10 +25,26 @@
   background-repeat: no-repeat;
 }
 
+.nav-bar {
+  float: right;
+  margin: 20px 10px 0 0;
+}
+
+.nav-bar a {
+  text-decoration: none;
+  color: #dfdfdf;
+}
+
 .footer {
   clear: both;
+  height:200px;
   background: rgba(0,0,0,0.2);
   padding: 5px 10px;
+}
+
+.block {
+  outline: 1px solid #cfcfcf;
+  margin: 20px 0 20px 0;
 }
 
 .project-info {
@@ -43,7 +54,6 @@
 
 .project-description {
   word-wrap: break-word;
-  
 }
 
 header {
@@ -63,14 +73,28 @@ h1 {
 }
 
 h2{ 
-  text-align: center;
+  font-family: "Droid Serif";
+  font-style: italic;
+  margin: 0;
+  font-size: 2em;
+  white-space: nowrap;
 }
 
-h3{ 
+h3 {
   text-align: center;
   margin: 0;
 }
 
+h4{ 
+  text-align: center;
+  margin: 0;
+}
+
+li {
+  font-size: 1.1em;
+  padding: 30px;
+  display: inline;
+}
 
 p {
   text-align: center;
