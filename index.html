@@ -1,55 +1,142 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html class="no-js" lang="en">
   <head>
-    <title>Ryan Blecher's gitHub website</title>
-    <link rel="stylesheet" type="text/css" href="stylesheets/default.css">
-    <link href='http://fonts.googleapis.com/css?family=Arvo' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ryan Blecher | Full Stack Web Developer</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link href='http://fonts.googleapis.com/css?family=Playfair+Display+SC' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Lora' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/custom.css" />
+    <script src="js/vendor/modernizr.js"></script>
+
   </head>
-
   <body>
-      <header>
-        <nav>
-           <ul>
-              <li><a href="index.html">about</a> / </li>
-              <li><a href="projects.html">projects</a> / </li>
-              <li><a href="portfolio.html">portfolio</a> / </li>
-              <li><a href="blog-index.html">articles</a> / </li>
-              <li><a href="contact.html">contact</a></li>
+
+    
+       <div class="row">
+        <div class="large-5 columns" id="home">
+          <h1 id="top-name">RYAN BLECHER</h1>
+        </div>
+        <div class="large-7 columns">
+          <ul class="right button-group">
+          <li><a href="#home" class="nav-bar">home</a></li>
+          <li><a href="#about-me" class="nav-bar">about</a></li>
+          <li><a href="#portfolio" class="nav-bar">portfolio</a></li>
+          <li><a href="#contact" class="nav-bar">contact</a></li>
           </ul>
-        </nav>
+         </div>
+       </div>
+      
+     
+      <div class="row">
+        <div class="large-12 columns">
+        <div id="slider">
+     
 
-      </header>
+          <ul class="example-orbit" data-orbit>
+            <li>
+              <img src="img/ryan1.jpg" alt="slide 3" />
 
+            </li>
+            <li>
+              <img src="img/amp1.jpg" alt="slide 1" />
+ 
+            </li>
+            <li class="active">
+              <img src="img/amp2.jpg" alt="slide 2" />
 
-    <div id="container">
-      <section>
-
-      <article>
-        <h2>About me.</h2>
-        <div class="dotted_break"></div>
-
-        <p>02.13.2015<br />I recently worked on a pairing challenge to create a cheat sheet for a topic we may need help on. We chose Javascript Prototypes! <a href="cheat-sheet.html">here!</a></p>
-        
-        <p>01.09.2015<br />I've recently had a GPS session and collaboratively worked on a webpage about pair programming. You can find it <a href="gps1-2/gps1-2.html">here!</a></p>
-
-        <p>12.29.2014<br />I'm Ryan Blecher and I'm a 29 year old developer in training. I'm currently enrolled at DevBootCamp in NYC and I'm going through phase-0. Right now I'm working on my html/css skills, so bear with me as i try to make my site look pretty on the inside and out!</p>
-
-        <p>A few years ago I started fixing guitar and bass amplifiers for friends and fell in love with "being close to the metal". I eventually became very serious about educating myself and started my own business. This coincidentally rekindled my love affair with code. I had dabbled in coding html/c++ for years, but never got anywhere, mostly due to my lack of direction. Then this year I took a class in Python programming which just screamed at me that I <em>needed</em> to code.</p>
-
-        <p>Now I'm currently pursuing my technolust professionally and I'm more excited than ever to meet and study with a myriad of like-minded nerd-folk. Being able to create something even as simple and bare-bones as this gitHub profile site has given me immense joy! Please feel free to look around and contact me with any questions or comments.</p>
-      </article>
-
-      </section>
-    </div>
-
-    <footer>
-      <div id="social_media">
-      <a href="https://github.com/notryanb" target="blank"><img alt="Github" src="images/PNG/github.png" /></a>
-      <a href="http://plus.google.com/+RyanBlecher" target="blank"><img alt="Google Plus" src="images/PNG/google-plus.png" /></a>
-      <a href="http://instagram.com/notryanb" target="blank"><img alt="Instagram" src="images/PNG/instagram.png" /></a>
-      <a href="http://twitter.com/Options_R" target="blank"><img alt="Twitter" src="images/PNG/twitter.png" /></a>
+            </li>
+          </ul>
+        </div>
+        <hr/>
+        </div>
       </div>
-    </footer>
 
+      
+      <div class="row" id="about-me">
+        <div class="large-12 columns">
+          <h3 class="headers">a bit in some bytes</h3>
+        </div>
+          
+        <div class="large-12 columns" >
+          <p class="bodies">Full Stack Web Developer, Amp Builder, Musician, Gamer. I am a web developer looking for opportunities to grow. I am passionate about clean, functional, and reliable code. I am happiest making meaningful software and comfortable working with unfamiliar technologies.
+          </p>
+        </div>
+      
+          <hr/>
+        </div>
+     
+      <div class="row" id="portfolio">
+        <div class="large-12 columns">
+          <h3 class="headers">portfolio</h3>
+        </div>
+        <div class="large-4 columns">
+          <img src="img/showgoer.png"/>
+          <h4 class="bodies"><a href="https://github.com/phanendar/showgoer" target="blank">Showgoer</a></h4>
+          <p class="bodies">A project where concert lovers can document their unique experience of show-going by sharing personal media associated with each concert they went to. Built using Ruby on Rails, Javascript, CSS3/HTMl5, FFMPEG, and Amazon S3.</p>
+        </div>
+        
+        <div class="large-4 columns">
+          <img src="img/myxylyx.png"/>
+          <h4 class="bodies"><a href="        https://github.com/notryanb/myxylyx" target="blank">MYXYLYX</a></h4>
+          <p class="bodies">MYXYLYX <i>(micks-ihl-icks)</i> is a WIP html5 shoot-em-up using the Javascript Phaser.io library. This is a project I hope to continue working on over time as I develop making games.</p>
+        </div>
+
+        <div class="large-4 columns">
+          <img src="img/color-synth.png"/>
+          <h4 class="bodies"><a href="https://github.com/notryanb/synthperiments/tree/master/color_synth" target="blank">Color Synth</a></h4>
+          <p class="bodies">I used this project to get up to speed with timbre.js by the time I went to the Spotify monthly music hackathon. Color Synth uses jQuery, object-oriented Javascript, and the Timbre.js library.</p>
+        </div>
+      
+        </div>
+        
+     
+    <div class="row" id="contact">
+        <div class="large-12 columns">
+        
+          <div class="panel">
+            <h4 class="bodies">Get in touch!</h4>
+                
+            <div class="row">
+              <div class="large-9 columns">
+                <p class="bodies">I'd love to hear from you. Feel free to reach out!</p>
+              </div>
+              <div class="large-3 columns">
+                <a href="mailto:notryanb@gmail.com?Subject=Hi%20Ryan" target="_top" class="radius button right">Contact Me</a>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+     
+       
+      
+      <footer class="row">
+        <div class="large-12 columns">
+          <hr/>
+          <div class="row">
+            <div class="large-6 columns">
+              <p>© 2015 Ryan Blecher</p>
+            </div>
+            <div class="large-6 columns">
+              <ul class="inline-list right">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about-me">About</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#contact">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+        </div> 
+      </footer>
+    
+    
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
   </body>
 </html>
