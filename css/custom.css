@@ -1,0 +1,46 @@
+
+.bodies {
+  font-family: "Lora";
+}
+
+.nav-bar {
+  font-family: "Lora";
+  font-size: 1.3em;
+  padding:5px;
+}
+
+#top-name {
+  font-family: "Lora";
+}
+
+.headers {
+  font-family: "Playfair Display SC";
+  text-align: center;
+  padding: 4px;
+}
+/*
+.header.full-page {
+  position: relative;
+  height: 100%;
+  background-repeat: no-repeat;
+}
+
+
+.header {
+  padding-top: 0px;
+  background-image: url("../img/ryan-bg.jpg");
+  background-position: 50% 50%;
+  background-size: cover;
+  background-attachment: fixed;
+  z-index: 5;
+}
+
+header {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+*/
