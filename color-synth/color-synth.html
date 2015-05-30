@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+      <title>Color-Synth - by Ryan Blecher</title>
+      <link rel="stylesheet" type="text/css" href="synth.css">
+      <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+      <script src="http://mohayonao.github.io/timbre.js/timbre.js"></script>
+      <script src="http://mohayonao.github.io/timbre.js/src/extras/keyboard.js"></script>
+      <script src="synth.js"></script>
+  <head>
+  
+  <body>
+
+   <div id="container"> 
+    <div id="control-panel">
+      <div id="wave-label">OSC 1 W A V E F O R M</div>
+      <div class="wave osc1" data-wave="sin">Sin</div>
+      <div class="wave osc1" data-wave="square">Square</div>
+      <div class="wave osc1" data-wave="saw">Saw</div>
+      <div class="wave osc1" data-wave="fami">Fami</div>
+      <div class="wave osc1" data-wave="">Off</div>
+
+      <div id="wave-label">OSC 2 W A V E F O R M</div>
+      <div class="wave osc2" data-wave="sin">Sin</div>
+      <div class="wave osc2" data-wave="square">Square</div>
+      <div class="wave osc2" data-wave="saw">Saw</div>
+      <div class="wave osc2" data-wave="fami">Fami</div>
+      <div class="wave osc2" data-wave="">Off</div>
+
+      <div id="wave-label">OSC 1 L F O</div>
+      <div class="wave" id="lfo1-btn">LFO Off</div>
+
+      <div id="wave-label">OSC 2 L F O</div>
+      <div class="wave" id="lfo2-btn">LFO Off</div>
+
+    </div>
+
+    <div id="keyboard">
+
+      <div id="row1">
+        <div class="blank key">1</div>
+        <div class="key" id="_61">2</div>
+        <div class="key" id="_63">3</div>
+        <div class="blank key">4</div>
+        <div class="key" id="_66">5</div>
+        <div class="key" id="_68">6</div>
+        <div class="key" id="_70">7</div>
+        <div class="blank key">8</div>
+        <div class="key" id="_73">9</div>
+        <div class="key" id="_75">0</div>
+      </div>
+
+      <div id="row2">
+        <div class="key" id="_60">Q</div>
+        <div class="key" id="_62">W</div>
+        <div class="key" id="_64">E</div>
+        <div class="key" id="_65">R</div>
+        <div class="key" id="_67">T</div>
+        <div class="key" id="_69">Y</div>
+        <div class="key" id="_71">U</div>
+        <div class="key" id="_72">I</div>
+        <div class="key" id="_74">O</div>
+        <div class="key" id="_76">P</div>
+      </div>
+
+      <div id="row3">
+        <div class="blank key">A</div>
+        <div class="key" id="_49">S</div>
+        <div class="key" id="_51">D</div>
+        <div class="blank key">F</div>
+        <div class="key" id="_54">G</div>
+        <div class="key" id="_56">H</div>
+        <div class="key" id="_58">J</div>
+        <div class="blank key">K</div>
+        <div class="key" id="_61">L</div>
+        <div class="key" id="_63">:</div>
+      </div>
+
+      <div id="row4">
+        <div class="key" id="_48">Z</div>
+        <div class="key" id="_50">X</div>
+        <div class="key" id="_52">C</div>
+        <div class="key" id="_53">V</div>
+        <div class="key" id="_55">B</div>
+        <div class="key" id="_57">N</div>
+        <div class="key" id="_59">M</div>
+        <div class="key" id="_60">,</div>
+        <div class="key" id="_62">.</div>
+        <div class="key" id="e3">/</div>
+      </div>
+
+    </div>
+</div>
+
+
+  </body>
+</html>
