@@ -170,11 +170,16 @@
     font-size: 20px;
 }
 
+.post-block-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .post-block {
+  min-height: 250px;
+  flex-basis: 250px;
   background: #696969;
-  width: 25%;
-  display: inline-block;
-  margin: 0;
 }
 
 .post-list {
