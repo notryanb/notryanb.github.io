@@ -1,21 +1,12 @@
 ---
 layout: default
 ---
-
-<div class="home">
-
-  <div class="post-container">
-    {% for post in site.posts %}
-    <ul class="post-list">
-      <li>
-      <span class="post-date">
-        {{ post.date | date: "%m.%-d.%Y" }}
-      </span>
-      <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">
+<div class="post-list">
+  {% for post in site.posts %}
+    <div class="post">
+      <a  href="{{ post.url | prepend: site.baseurl }}">
         {{ post.title }}
       </a>
-      </li>
-    </ul>
-    {% endfor %}
-  </div>
+    </div>
+  {% endfor %}
 </div>
