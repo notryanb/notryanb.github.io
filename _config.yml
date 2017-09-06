@@ -2,8 +2,7 @@
 title: 'lil bits'
 email: notryan@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  Ryan Blechers blog. Each post covers short things I have learned
-  in the fields of software and electrical engineering. 
+  Lil' bits of programming sprinkled with some hardware hacking.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://notryan.github.com" # the base hostname & protocol for your site
 twitter_username: Options_r
@@ -11,3 +10,12 @@ github_username:  notryanb
 
 # Build settings
 markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
