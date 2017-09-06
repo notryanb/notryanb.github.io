@@ -18,6 +18,12 @@ body:before {
   bottom: 0;
   z-index: -1;
 }
+
+header.site-header {
+  border-bottom: 3px solid #000;
+  margin-bottom: 1rem;
+}
+
 a {
     cursor: pointer;
     color: #123123;
@@ -54,7 +60,6 @@ footer {
   max-width: 60rem;
   margin: 0 auto;
   padding: 0 1rem;
-
 }
 
 .lil-bits {
@@ -69,13 +74,23 @@ footer {
       border-bottom: 1px solid #000;    
     }
 
-    h2:after {
-      content: ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-      position: absolute;
-      bottom: 1.2rem;
-      left: 0;
+    .description {
+      padding-bottom: 1rem;
+      font-size: 0.9rem;
     }
   }
 }
 
-
+.language-rust {
+    .highlight {
+      // Hide some of rouges problems with highlighting life times
+      .err {
+        // Life time tick as well as following identifier, but also `?Sized`
+        &, & + .n {
+          color: #000080; // color of types
+          background-color: transparent;
+          font-weight: normal;
+        }
+      }
+    }
+  }
