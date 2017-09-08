@@ -8,12 +8,17 @@ Writing my first post. Not sure what it'll be.
 
 > Here is a blockquote
 
-{% highlight rust %}
 
-let x = users.load::<User>(&*connection)
-    .expect("I wonder if this will highlight");
+```rust
+use std::collections::HashMap;
 
-{% endhighlight %}
+fn count_words(text: &str) -> HashMap<&str, usize> {
+    text.split(' ').fold(
+        HashMap::new(),
+        |mut map, word| { *map.entry(word).or_insert(0) += 1; map }
+    )
+} 
+```
 
 More stuff.
 
