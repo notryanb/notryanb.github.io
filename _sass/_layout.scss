@@ -82,15 +82,6 @@ footer {
 }
 
 .language-rust {
-    .highlight {
-      // Hide some of rouges problems with highlighting life times
-      .err {
-        // Life time tick as well as following identifier, but also `?Sized`
-        &, & + .n {
-          color: #000080; // color of types
-          background-color: transparent;
-          font-weight: normal;
-        }
-      }
-    }
-  }
+  padding: 1rem;
+  background-color:#3f3f3f;
+}
