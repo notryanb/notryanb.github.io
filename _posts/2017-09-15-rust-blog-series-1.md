@@ -81,6 +81,9 @@ path = "src/lib.rs"
 rocket = "0.3.2"
 rocket_codegen = "0.3.2"
 rocket_contrib = { version = "0.3.2", default-features = false, features = ["tera_templates"] }
+
+# The following four dependencies will be touched upon
+# at later times in this blog series
 serde = "1.0.11"
 serde_derive = "1.0.11"
 serde_json = "1.0.2"
@@ -89,6 +92,9 @@ tera = "0.10"
 # DB
 diesel = { version = "0.16", features = ["postgres"] }
 diesel_codegen = { version = "0.16", features = ["postgres"] }
+
+# r2d2 is related to database connection pools
+# this will be reviewed in a future post
 r2d2 = "*"
 r2d2-diesel = "*"
 
