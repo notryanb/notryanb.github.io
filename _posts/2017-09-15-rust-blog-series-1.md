@@ -114,9 +114,9 @@ Diesel will assume you want all `sqlite`, `mysql`, and  `postgresql` backends.
 Our project is only concerned with `postgres`,
 so we'll just be focusing on that so you don't have to install everything else :P.
 
-`diesel_cli` figures out how to setup the database by checking a file called `.env` for a database url.
-Create your `.env` file in the root of your crate.
-Rhe first line of the file should be your database url.
+`diesel_cli` figures out how to setup the database by checking a file named `.env` for a database url.
+Create the `.env` file in the root of your crate.
+The first line of the file should be your database url.
 
 ```rust
 // inside `.env`
@@ -126,16 +126,21 @@ DATABASE_URL=postgres://username:password@localhost/lil_blog
 
 The `.env` file should not be checked into source control,
 otherwise everyone will know your database url and credentials!!! Ahhh!!!
-Once you have your `.env` file setup, run the command `diesel setup`.
+Once you have your `.env` file setup, run the following command 
+
+> `diesel setup`
+
 When succuessful, you should see the following output.
 
 ```bash
+# CLI Output
+
 Creating migrations directory at: /Users/ryan/Sites/rust_playground/lil_blog/migrations
 Creating database: lil_blog
 ```
 
 Congrats, `diesel_cli` created a new directory for you to keep track of migrations.
-From the CLI, you should be able to use the `psql` command to get into postgres.
+From the CLI, you should be able to use the `psql` command to log into postgres.
 From there you can type `\d` to list all the databases you currently have.
 You'll see `lil_blog` listed in the output if it worked.
 Alternatively, you can also log into the db directly with `psql lil_blog`.
@@ -144,7 +149,7 @@ It should be empty at this point.
 
 Now we should think about our app and what functionality we want to provide.
 I think a good starting point for a blog is creating a `users` and `posts` table.
-A `User` can *have many* `Posts` and in reverse,
+A `User` can *have many* `Posts` and in return,
 a `Post` *belongs to* (or "has one") a `User`.
 I think it might be good to demonstate some basic authorization,
 so we'll want to be able to register new users and perform [CRUD] actions
@@ -174,7 +179,7 @@ Diesel has a bunch of handy CLI features to assert control over your migrations.
 
 > `diesel migration -h`
 
-The above command will give us a nice menu for exploring the tool.
+The above command will give us a nice help menu for exploring the tool.
 Let's check the migrations we've yet to run!
 
 > `diesel migration list`
@@ -198,18 +203,18 @@ Received an empty query
 
 Up until this point it has been nothing but setup, so lets write some code!
 The first code to write in our rust project will be `SQL`! 0_o.
-We'll get to rust soon enough. :).
+We'll get to rust soon enough :).
 
 We already discussed the tables we want present in our database.
-Diesel expects the migration files to be SQL that is compatible with your database backend.
+Diesel expects the migration files to be SQL that is compatible with our database backend.
 If we were to use a different backend than `postgres`, our column types will look different.
 
-Diesel offers a feature that lets you infer your database schema from a file rather than 
+Diesel also offers a feature that lets you infer your database schema from a file rather than 
 infer it from our database url.
 We won't be covering that in this guide, but the diesel team is currently working on official documentation
 to cover these scenarios.
 
-In the `migrations/...create_users_and_posts/up.sql` migration
+In `migrations/...create_users_and_posts/up.sql` migration
 
 ```sql
 /* In the up.sql migration file */
@@ -310,7 +315,7 @@ fn index() -> String {
 ```
 
 If you would be so kind, please enter `cargo run` into your cli.
-I won't spoil the surprise, but checkout that nice output!
+I won't spoil the surprise, but expect some nice output!
 Navigate to `localhost:8000` in your browser or `cURL` and you should see our string displayed.
 
 
@@ -326,12 +331,12 @@ extern crate rocket;
 ```
 
 Rocket is using some nightly rust features to generate a lot of boilerplate code for us.
-Inside the main function we're using quite a bit of rocket api without having to care too much about how it works.
+Inside the main function we're using quite a bit of Rocket's api without having to care too much about how it is implemented or works.
 We just need to know the api itself.
-Oh yeah, We're also importing the `rocket` crate here.
+Oh yeah, we're also importing the `rocket` crate here.
 
 The main function is setting up our `rocket` app and registering the routes we want to navigate.
-This this case `mount()` first takes a string to match the url path against and the second arg is essentially a `vec![]` of the
+In this case `mount()` first takes a string to match against the url path and the second arg is essentially a `vec![]` of the
 routes we want to register.
 
 ```rust
@@ -347,8 +352,12 @@ Below we are declaring that the `index()` function is going to be a GET request 
 the root path of wherever the route is mounted,
 which in this case is also `"/"`.
 We could've specified `"/whatevers"` and then  navigated to `localhost:8000/whatevers` for the same string result.
+The [Rocket Guide] covers routing in much more detail.
+We will be revisiting some intermediate routing techniques once our app becomes more complex.
 The function returns a rust `String`, so we better return that as well!
 We'll dive into templates next and setup a simple `tera` template for the index.
+
+[Rocket Guide]: https://rocket.rs/guide/overview/#routing
 
 ```rust
 
@@ -369,11 +378,11 @@ Take a break. This is a lot of stuff we just went though. Let's review what has 
 
 Such Wow, Such Amazement. 
 That was a lot of work,
-but I still want to link up a template before calling is quits.
-Create a directory in the root of your crate `/templates`.
+but I still want to link up a template before calling it quits for the evening.
+Create a directory in the root of your crate named `/templates`.
 Now create a template file `templates/layout.html.tera`.
 I'm calling mine `layout` because this will be the base layout for every page.
-If you're familiar with Ruby on Rails, this is similar to that layout erb file.
+If you're familiar with Ruby on Rails, this is similar to the layout erb file.
 Other suitable names might be `base.html.tera` or `main.html.tera`.
 
 ```html
@@ -392,9 +401,9 @@ Other suitable names might be `base.html.tera` or `main.html.tera`.
 </html>
 ```
 
-The funky double curly braces in our `<p></p>` tag enables us to take a `tera::Context` and output it to the user.
+The funky double curly braces in our second `<p></p>` block enables us to take a `tera::Context` and output it to the user.
 This is going to be how we render dynamic content such as a post list or user info.
-Using templates and contexts means we need to modify our code in `main.rs`.
+Using templates and contexts means we need to modify the code in `main.rs`.
 
 We need to make use of `rocket`'s [fairings] and `tera`'s [Context].
 
@@ -411,13 +420,14 @@ extern crate rocket;
 extern crate rocket_contrib;
 extern crate tera;
 
+// Bring both Template and Context into scope
 use rocket_contrib::Template;
 use tera::Context;
 
 fn main() {
     rocket::ignite()
         .mount("/", routes![index])
-        .attach(Template.fairing())
+        .attach(Template.fairing()) // This lets us use templating
         .launch();
 }
 
@@ -442,8 +452,13 @@ error[E0277]: the trait bound `str: std::marker::Sized` is not satisfied
    = help: the trait `std::marker::Sized` is not implemented for `str`
 ```
 
-Ugh. It's saying the second argument to `context.add()` doesn't have a size that be verified at compile time.
+Ugh. It's saying the second argument to `context.add()` doesn't have a size that can be verified at compile time.
 It apparently needs to know that information.
+If we check out the rust docs for the [Sized] trait,
+we'll see that it says
+
+> Types with a constant size known at compile time.
+
 `Sized` is not implemented for `str`... Hm...
 Let's try converting it to a `String` with `String::from()` or `to_string()`.
 
@@ -472,6 +487,7 @@ Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
 
 *AHHH!!!!11!!!* Okay. I'll just read the error message again and figure this out.
 *expected reference and found struct String`*.
+We gave the context an actual `String` value, but it was expecting a reference passed in.
 Okay... Try this. References to the rescue!
 
 ```rust
@@ -480,7 +496,7 @@ Okay... Try this. References to the rescue!
 ```
 
 Niiiice! `cargo run` again and navigate to `localhost:8000` in your browser.
-You should see not only the context hard-coded into `<p>` tag, but also the `<p>` content that was generated inside route.
+You should see not only the content hard-coded into `<p>` tag, but also the `<p>` context content that was generated inside route.
 Templates are working and showing "dynamic" data for us. Thanks for sticking around and reading thus far.
 The very last line of our `index()` function loads & renders the template by pointing to the template path and giving it a reference
 to the `Context` we made. Rocket automatically looks in the `/templates` folder and will match them by their prefix.
@@ -489,7 +505,7 @@ ie. `layout` instead of `layout.html.tera`.
 In the next post we will explore
 - Seeding the database with posts
 - Listing those posts on the index page
-- Creating understanding a database thread pool
+- Creating & understanding a database thread pool
 
 ## <a name="references"></a>References
 
