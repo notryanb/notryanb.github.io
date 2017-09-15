@@ -9,7 +9,7 @@ categories:
 - diesel
 ---
 
-[Rust] is a relatively new systems language programming language that runs blazingly fast, prevents segfaults, and guarantees thread safety.
+[Rust] is a relatively new "systems programming language that runs blazingly fast, prevents segfaults, and guarantees thread safety."
 It currently has a reputation for a steep learning curve,
 but this blog series aims to help ease in new developers.
 I come from a Ruby web development background and
