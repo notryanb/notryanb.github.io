@@ -19,11 +19,11 @@ this series will be aimed at developers with similar backgrounds.
 
 For this project we'll be using [Rust Nightly], [Diesel], [Rocket], and [Postgres].
 
-`Rocket` is a web framework for Rust that makes it simple to write fast web applications
+Rocket is a web framework for Rust that makes it simple to write fast web applications
 without sacrificing flexibility or type safety.
 All with minimal code.
 
-`Diesel` is a Safe, Extensible ORM and Query Builder for Rust
+Diesel is a Safe, Extensible(...*"super, mega, awesome"*) ORM and Query Builder for Rust
 
 In an effort to keep this blog focused on writing application code,
 I won't be covering setting up Rust or Postgres.
@@ -110,7 +110,7 @@ In your command line
 > `cargo install diesel_cli --no-default-features --features postgres`.
 
 The reason we pass both of those long flags to install is because by default,
-`Diesel` will assume you want all `sqlite`, `mysql`, and  `postgresql` backends.
+Diesel will assume you want all `sqlite`, `mysql`, and  `postgresql` backends.
 Our project is only concerned with `postgres`,
 so we'll just be focusing on that so you don't have to install everything else :P.
 
@@ -204,7 +204,7 @@ We already discussed the tables we want present in our database.
 Diesel expects the migration files to be SQL that is compatible with your database backend.
 If we were to use a different backend than `postgres`, our column types will look different.
 
-`Diesel` offers a feature that lets you infer your database schema from a file rather than 
+Diesel offers a feature that lets you infer your database schema from a file rather than 
 infer it from our database url.
 We won't be covering that in this guide, but the diesel team is currently working on official documentation
 to cover these scenarios.
@@ -285,7 +285,7 @@ PHEW! Okay, I think we can start thinking about our application.
 For now, lets just get a simple server running with an index page.
 You might be asking "What?!?! We did all this setup with diesel and we're not even going to do any database stuff yet?!?
 Don't worry!
-I'll introduce how to work with our `Diesel` backend from within the context of a `Rocket` app.
+I'll introduce how to work with our Diesel backend from within the context of a Rocket app.
 
 Let's open up `src/bin/main.rs` and write some rust. Wooooo!!!
 
@@ -325,7 +325,7 @@ Let's review the first few lines of code in `main.rs`
 extern crate rocket;
 ```
 
-`Rocket` is using some nightly rust features to generate a lot of boilerplate code for us.
+Rocket is using some nightly rust features to generate a lot of boilerplate code for us.
 Inside the main function we're using quite a bit of rocket api without having to care too much about how it works.
 We just need to know the api itself.
 Oh yeah, We're also importing the `rocket` crate here.
@@ -499,3 +499,5 @@ In the next post we will explore
 - [Rust Community](https://www.rust-lang.org/en-US/community.html)
 - [Diesel Gitter](https://gitter.im/diesel-rs/diesel)
 - [Crates and Cargo](http://doc.crates.io/manifest.html)
+- [Tera Templating Engine](https://github.com/Keats/tera)
+- [Jinja Templating Engine](http://jinja.pocoo.org/) => Inspired tera and shares a lot of the api
