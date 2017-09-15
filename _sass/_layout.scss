@@ -81,7 +81,22 @@ footer {
   }
 }
 
-.language-rust {
+blockquote {
+  border-left: 2px solid #000;
+  padding-left: 0.7rem;
+
+  p {
+    &:before {
+      content: "> ";
+    }
+  }
+}
+
+.highlight {
   padding: 1rem;
   background-color:#3f3f3f;
 }
+// .language-rust, .language-bash, .language-sql {
+//   padding: 1rem;
+//   background-color:#3f3f3f;
+// }
