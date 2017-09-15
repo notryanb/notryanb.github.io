@@ -17,9 +17,17 @@ I come from a Ruby web development background and this series will be aimed at d
 [Rust]: https://www.rust-lang.org/en-US/
 
 For this project we'll be using [Rust Nightly], [Diesel], [Rocket], and [Postgres].
+
+!!!Explain Diesel && Rocket
+
+
 In an effort to keep this blog focused on writing the app,
 I won't be covering setting up Rust or Postgres.
 They each may come with their own issues depending on which OS you're using.
+If you're running into issues with environment setup,
+the rust community is very friendly and can help point you in the right direction.
+
+Here are some places to get help. [ List help here like gitter, irc channels, forums]
 
 [Rust Nightly]: https://www.rustup.rs/
 [Diesel]: http://www.diesel.rs
@@ -77,7 +85,10 @@ dotenv = "0.10"
 ```
 
 We're going to be installing the [diesel cli]() which will help us setup the database and run migrations.
-In your command line => `cargo install diesel_cli --no-default-features --features postgres`.
+In your command line
+
+> `cargo install diesel_cli --no-default-features --features postgres`.
+
 The reason we pass both of those long flags to install is because by default,
 Diesel will assume you want `sqlite`, `mysql`, and  `postgresql`.
 Our project is only concerned with `postgres`,
@@ -104,4 +115,326 @@ Alternatively, you can also log into the db directly with `psql lil_blog`.
 To check your tables, type `\l`.
 It should be empty at this point.
 
+Now we should think about our app and what functionality we want to provide.
+I think a good starting point is having a `users` and `posts` table.
+A `User` can have many `Posts` and in reverse,
+a `Post` belongs to (or "has one") a `User`.
+I think it might be good to demonstate some basic authorization,
+so we'll want to be able to register new users and perform [CRUD] actions
+on their posts.
 
+The next step is to create a migration.
+To keep things simple, we'll create our users and posts tables in the same migration.
+We're just starting a new app,
+so this is fine for demonstration, but once you're running in production,
+any changes should be made incrementally with small and focused migrations.
+
+> `diesel migrations generate create_users_and_posts`
+
+```
+Creating migrations/20170915130246_create_users_and_posts/up.sql
+Creating migrations/20170915130246_create_users_and_posts/down.sql
+``` 
+
+We'll now have two files which help diesel keep track of migrations.
+UP migrations will be for moving forward and making changes to the database
+and  DOWN migrations will be for reverting the database to its previous state.
+Diesel has a bunch of handy CLI features to assert control over your migrations.
+
+> `diesel migration -h`
+
+The above command will give us a nice menu for exploring the tool.
+Let's check the migrations we've yet to run!
+
+> `diesel migration list`
+
+```
+Migrations:
+  [ ] 20170915130246_create_users_and_posts
+```
+
+Alright, it shows that first migration as being unchecked.
+If we try to run migrations now, `diesel_cli` will detect that the files are empty and report that back to us.
+
+```
+Running migration 20170915130246
+Received an empty query
+```
+
+Up until this point it has been nothing but setup, so lets write some code!
+The first code to write in our rust project will be `SQL`! 0_o.
+We'll get to rust soon enough. :).
+In the `.../create_users_and_posts/up.sql` migration
+
+```sql
+/* In the up.sql migration file */
+
+CREATE TABLE users ( 
+  id SERIAL PRIMARY KEY,
+  first_name VARCHAR NOT NULL,
+  last_name VARCHAR NOT NULL,
+  email VARCHAR UNIQUE NOT NULL,
+  password VARCHAR NOT NULL
+);
+
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  title VARCHAR NOT NULL,
+  content TEXT NOT NULL,
+  published BOOLEAN NOT NULL DEFAULT 'f'
+);
+```
+
+In the `.../create_users_and_posts/down.sql` migration
+
+```
+/* In the down.sql migration file */
+
+DROP table users;
+DROP table posts;
+```
+
+Great, now we have UP and DOWN migrations.
+Lets run them and check if it works.
+
+> `diesel migration run`
+
+Now let's use diesel_cli's `redo` command to revert the migrations and re-run them.
+This will let us know that both UP and DOWN work correctly. 
+In most situations you'll just be running `diesel migration run`.
+
+> `diesel migration redo`
+
+```bash
+Rolling back migration 20170915130246
+Running migration 20170915130246
+```
+
+Now we should be able to see that Diesel completed the migration and is tracking it.
+
+> `diesel migration list`
+
+```bash
+Migrations:
+  [X] 20170915130246_create_users_and_posts
+```
+
+We can also verify this in postgres with `psql lil_blog` and then typing `\d`
+
+```bash
+                   List of relations
+ Schema |            Name            |   Type   | Owner
+--------+----------------------------+----------+-------
+ public | __diesel_schema_migrations | table    | ryan
+ public | posts                      | table    | ryan
+ public | posts_id_seq               | sequence | ryan
+ public | users                      | table    | ryan
+ public | users_id_seq               | sequence | ryan
+
+```
+
+PHEW! Okay, I think we can start thinking about our application.
+For now, lets just get a simple server running with an index page.
+You might be asking "What?!?! We did all this setup with diesel and we're not even going to do any database stuff yet?!?
+Don't worry!
+I'll introduce how to work with our `Diesel` backend from within the context of a `Rocket` app.
+
+Let's open up `src/bin/main.rs` and write some rust. Wooooo!!!
+
+```rust
+// Inside `src/bin/main.rs`
+
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+extern crate rocket;
+
+fn main() {
+  rocket::ignite()
+    .mount("/", routes![index])
+    .launch();
+}
+
+#[get("/")]
+fn index() -> String {
+  "Hello Wooooooorrrrlllld! Not much a blog yet, eh?".to_string()
+}
+```
+
+If you would be so kind, please enter `cargo run` into your cli.
+I won't spoil the surprise, but checkout that nice output!
+Navigate to `localhost:8000` in your browser or `cURL` and you should see our string displayed.
+
+
+It's official. We've made our first rocket (and sort of diesel...) app!
+We will be building upon this pattern in our `bin` to make our app more complex.
+Let's review the first few lines of code in `main.rs`
+
+```rust
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+extern crate rocket;
+```
+
+`Rocket` is using some nightly rust features to generate a lot of boilerplate code for us.
+Inside the main function we're using quite a bit of rocket api without having to care too much about how it works.
+We just need to know the api itself.
+Oh yea, We're also importing the `rocket` crate here.
+
+The main function is setting up our `rocket` app and registering the routes we want to navigate.
+This this case `mount()` take a string to match the url path against and a essentially a `vec![]` of the
+routes we want to register.
+
+```rust
+fn main() {
+  rocket::ignite()
+    .mount("/", routes![index])
+    .launch();
+}
+
+```
+
+Below we are declaring that the `index()` function is going to be a GET request to the root path.
+We could've specified `"/whatevers"` and then  navigated to `localhost:8000/whatevers` for the same string result.
+The function returns a rust `String`, so we better return that as well!
+We'll dive into templates next and setup a simple `tera` template for the index.
+
+```rust
+
+#[get("/")]
+fn index() -> String {
+  "Hello Wooooooorrrrlllld! Not much a blog yet, eh?".to_string()
+}
+```
+
+Take a break. This is a lot of stuff we just went though. Let's review what has been accomplished so far.
+
+- Install `diesel_cli` specifically for `postgres`
+- Point `diesel_cli` to a specific database url
+- Have `diesel_cli` create the DB
+- Think about our app features and write migrations to support those features
+- Run migrations with `diesel_cli` and confirm they work via postgres cli
+- Create a barebones `rocket` app to eventually link up with diesel.
+
+Such Wow, Such Amazement. 
+I think I'm going to bed.
+That was a lot of work,
+but I JUST HAD COFFEE and want to link up a template!!!
+Create a directory in the root of your crate `/templates`.
+Now create a template file => `templates/layout.html.tera`.
+I'm calling mine `layout` because this will be the base layout for every page.
+If you're familiar with Ruby on Rails, this is similar to that layout erb file.
+Other suitable names might be `base.html.tera` or `main.html.tera`.
+
+```html
+<!-- inside `base.html.tera` -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body>
+        <div class="container">
+          <p>Check out this tera Context:<p>
+         {% raw %} <p>{{ my_message }}</p>{% endraw %}
+        </div>
+    </body>
+</html>
+```
+
+The funky double curly braces enables us to take a `tera::Context` and output it to the user.
+This is going to be how we render dynamic content such as a post list or user info.
+Using templates and contexts means we need to modify our code in `main.rs`
+
+```rust
+// Inside `src/bin/main.rs`
+
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+extern crate rocket;
+extern crate rocket_contrib;
+extern crate tera;
+
+use rocket_contrib::Template;
+use tera::Context;
+
+fn main() {
+    rocket::ignite()
+        .mount("/", routes![index])
+        .attach(Template.fairing())
+        .launch();
+}
+
+#[get("/")]
+fn index() -> Template {
+    let mut context = Context::new();
+
+    context.add("my_message", "Heya from template context!");
+    Template::render(&context);
+}
+```
+
+Go ahead.. just try compiling that :P.
+
+```bash
+error[E0277]: the trait bound `str: std::marker::Sized` is not satisfied
+  --> src/bin/main.rs:22:13
+   |
+22 |     context.add("my_message", "Heya from template context!");
+   |             ^^^ `str` does not have a constant size known at compile-time
+   |
+   = help: the trait `std::marker::Sized` is not implemented for `str`
+```
+
+Ugh. It's saying the second argument to `context.add()` doesn't have a size that be verified at compile time.
+It apparently needs to know that information.
+So `Sized` is not implemented for `str`... Hm...
+Let's try converting it to a `String` with `String::from()` or `to_string()`.
+
+```rust
+    context.add("my_message", String::from("Heya from template context!"));
+```
+
+`String`s have a known size at compile time. Surely this will work!
+Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
+
+[`str`]: http://www.link_to_rust.com
+[`String`]: http://www.link_to_rust.com
+
+
+```bash
+  --> src/bin/main.rs:22:31
+   |
+22 |     context.add("my_message", String::from("Heya from template context!"));
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^ expected reference, found struct `std::string::String`
+   |
+   = note: expected type `&_`
+              found type `std::string::String`
+   = help: try with `&String::from("Heya from template context!")`
+```
+
+*AHHH!!!!11!!!* Okay. I'll just read the error message again and figure this out.
+*expected reference and found struct String`*.
+Okay... Try this. References to the rescue!
+
+```rust
+    context.add("my_message", &String::from("Heya from template context!"));
+```
+
+Niiiice! `cargo run` again and navigate to `localhost:8000` in your browser.
+Templates are working and showing "dynamic" data for us. Thanks for sticking around and reading thus far.
+In the next post we will explore
+- Seeding the database with posts
+- Listing those posts on the index page
+- Creating understanding a database thread pool
+
+## References
+
+- [Diesel Getting Started Guide](http://diesel.rs/guides/getting-started/)
+- [Rocket Hello World Example](https://rocket.rs/guide/getting-started/#hello-world)
+- [Diesel CLI Source & Guide](https://github.com/diesel-rs/diesel/tree/master/diesel_cli)
+- [Rust Community](https://www.rust-lang.org/en-US/community.html)
+- [Diesel Gitter](https://gitter.im/diesel-rs/diesel)
