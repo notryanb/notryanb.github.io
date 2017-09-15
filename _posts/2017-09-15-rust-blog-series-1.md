@@ -11,23 +11,26 @@ categories:
 
 [Rust] is a relatively new systems language programming language that runs blazingly fast, prevents segfaults, and guarantees thread safety.
 It currently has a reputation for a steep learning curve,
-but this blog series aims to help alleviate some of those issues.
-I come from a Ruby web development background and this series will be aimed at developers with similar backgrounds.
+but this blog series aims to help ease in new developers.
+I come from a Ruby web development background and
+this series will be aimed at developers with similar web development backgrounds.
 
 [Rust]: https://www.rust-lang.org/en-US/
 
 For this project we'll be using [Rust Nightly], [Diesel], [Rocket], and [Postgres].
 
-!!!Explain Diesel && Rocket
+`Rocket` is a web framework for Rust that makes it simple to write fast web applications
+without sacrificing flexibility or type safety.
+All with minimal code.
 
+`Diesel` is a Safe, Extensible ORM and Query Builder for Rust
 
-In an effort to keep this blog focused on writing the app,
+In an effort to keep this blog focused on writing application code,
 I won't be covering setting up Rust or Postgres.
 They each may come with their own issues depending on which OS you're using.
 If you're running into issues with environment setup,
 the rust community is very friendly and can help point you in the right direction.
-
-Here are some places to get help. [ List help here like gitter, irc channels, forums]
+Please check out the [References](#references) section at the bottom of this page for more info.
 
 [Rust Nightly]: https://www.rustup.rs/
 [Diesel]: http://www.diesel.rs
@@ -37,16 +40,25 @@ Here are some places to get help. [ List help here like gitter, irc channels, fo
 ## Getting Started
 
 First thing is to setup your new project.
-From your command line, start a new rust project with `cargo new lil_blog`.
+I'm going to call my project "lil blog",
+but you can name it whatever you want (this might be the hardest part of the project!).
+From your command line (will now be referred to as CLI),
+start a new rust project with `cargo new lil_blog`.
 This will set up your project to be a cargo library,
-so we'll also need to make a directory `src/bin` and create `src/bin/main.rs`.
+so we'll also need to make a directory `src/bin` and create `src/bin/main.rs` by hand.
 
-We'll also need to configure our dependencies in our `Cargo.toml` file.
+We'll also need to configure our dependencies in the [`Cargo.toml`] file.
+`Cargo.toml` is a manifest file where you may set up dependencies and other
+configurations for your rust project.
 It should look like the following.
 I'll explain our dependencies as they come up in code,
 but this should be almost all we need for setting up a simple diesel/rocket project.
 
-```
+[`Cargo.toml`]: http://doc.crates.io/manifest.html
+
+```rust
+# inside `Cargo.toml`
+
 [package]
 name = "lil blog"
 version = "0.1.0"
@@ -84,8 +96,10 @@ r2d2-diesel = "*"
 dotenv = "0.10"
 ```
 
-We're going to be installing the [diesel cli]() which will help us setup the database and run migrations.
+Next we're going to be installing the [diesel_cli] which will help us setup the database and run migrations.
 In your command line
+
+[diesel_cli]: https://github.com/diesel-rs/diesel/tree/master/diesel_cli
 
 > `cargo install diesel_cli --no-default-features --features postgres`.
 
@@ -431,10 +445,11 @@ In the next post we will explore
 - Listing those posts on the index page
 - Creating understanding a database thread pool
 
-## References
+## <a name="references"></a>References
 
 - [Diesel Getting Started Guide](http://diesel.rs/guides/getting-started/)
 - [Rocket Hello World Example](https://rocket.rs/guide/getting-started/#hello-world)
 - [Diesel CLI Source & Guide](https://github.com/diesel-rs/diesel/tree/master/diesel_cli)
 - [Rust Community](https://www.rust-lang.org/en-US/community.html)
 - [Diesel Gitter](https://gitter.im/diesel-rs/diesel)
+- [Crates and Cargo](http://doc.crates.io/manifest.html)
