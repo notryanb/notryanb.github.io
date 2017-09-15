@@ -13,7 +13,7 @@ categories:
 It currently has a reputation for a steep learning curve,
 but this blog series aims to help ease in new developers.
 I come from a Ruby web development background and
-this series will be aimed at developers with similar web development backgrounds.
+this series will be aimed at developers with similar backgrounds.
 
 [Rust]: https://www.rust-lang.org/en-US/
 
