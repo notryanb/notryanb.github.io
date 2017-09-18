@@ -457,6 +457,8 @@ It apparently needs to know that information.
 If we check out the rust docs for the [Sized] trait,
 we'll see that it says
 
+[Sized]: https://doc.rust-lang.org/std/marker/trait.Sized.html
+
 > Types with a constant size known at compile time.
 
 `Sized` is not implemented for `str`... Hm...
@@ -485,9 +487,10 @@ Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
    = help: try with `&String::from("Heya from template context!")`
 ```
 
-*AHHH!!!!11!!!* Okay. I'll just read the error message again and figure this out.
-*expected reference and found struct String`*.
-We gave the context an actual `String` value, but it was expecting a reference passed in.
+*AHHH!!!!11!1!*, Okay. I'll just read the error message again and figure this out.
+
+*expected reference and found struct String* .
+We gave context an actual `String` value, but it was expecting a reference passed in.
 Okay... Try this. References to the rescue!
 
 ```rust
