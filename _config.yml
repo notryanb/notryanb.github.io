@@ -8,6 +8,9 @@ url: "http://notryan.github.com" # the base hostname & protocol for your site
 twitter_username: Options_r
 github_username:  notryanb
 
+# Posts
+permalink: "/:title.html"
+
 # Build settings
 markdown: kramdown
 highlighter: rouge
