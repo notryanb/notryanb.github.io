@@ -23,7 +23,7 @@ Rocket is a web framework for Rust that makes it simple to write fast web applic
 without sacrificing flexibility or type safety.
 All with minimal code.
 
-Diesel is a Safe, Extensible(...*"super, mega, awesome"*) ORM and Query Builder for Rust
+Diesel is a Safe, Extensible(...*"super, mega, amazing"*) ORM and Query Builder for Rust
 
 In an effort to keep this blog focused on writing application code,
 I won't be covering setting up Rust or Postgres.
