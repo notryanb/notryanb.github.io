@@ -151,9 +151,11 @@ Now we should think about our app and what functionality we want to provide.
 I think a good starting point for a blog is creating a `users` and `posts` table.
 A `User` can *have many* `Posts` and in return,
 a `Post` *belongs to* a (or *has one*) `User`.
-I think it might be good to demonstate some basic authorization,
-so we'll want to be able to register new users and perform [CRUD] actions
-on their posts.
+Here is a list of some features we should aim for.
+
+- basic user authorization(login/signup/page restriction)
+- [CRUD] actions on users and posts
+- draft/publish posts
 
 [CRUD]: https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
 
@@ -201,9 +203,9 @@ Running migration 20170915130246
 Received an empty query
 ```
 
-Up until this point it has been nothing but setup, so lets write some code!
+Up until this point we've only been concerned with setup, so lets write some code!
 The first code to write in our rust project will be `SQL`! 0_o.
-We'll get to rust soon enough :).
+We'll get to rust soon enough. :)
 
 We already discussed the tables we want present in our database.
 Diesel expects the migration files to be SQL that is compatible with our database backend.
@@ -290,7 +292,7 @@ PHEW! Okay, I think we can start thinking about our application.
 For now, lets just get a simple server running with an index page.
 You might be asking "What?!?! We did all this setup with diesel and we're not even going to do any database stuff yet?!?
 Don't worry!
-I'll introduce how to work with our Diesel backend from within the context of a Rocket app.
+Part II of this series will introduce how to work with our Diesel backend from within the context of a Rocket app.
 
 Let's open up `src/bin/main.rs` and write some rust. Wooooo!!!
 
@@ -336,8 +338,8 @@ We just need to know the api itself.
 Oh yeah, we're also importing the `rocket` crate here.
 
 The main function is setting up our `rocket` app and registering the routes we want to navigate.
-In this case `mount()` first takes a string to match against the url path and the second arg is essentially a `vec![]` of the
-routes we want to register.
+In this case `mount()` first parameter is a string to match against the url path
+and the second parameter is essentially a `vec![]` of the routes we want to register.
 
 ```rust
 fn main() {
@@ -348,8 +350,8 @@ fn main() {
 
 ```
 
-Below we are declaring that the `index()` function is going to be a GET request to
-the root path of wherever the route is mounted,
+Below we are declaring that the `index()` function is a GET request to
+the root path where the route is mounted,
 which in this case is also `"/"`.
 We could've specified `"/whatevers"` and then  navigated to `localhost:8000/whatevers` for the same string result.
 The [Rocket Guide] covers routing in much more detail.
@@ -382,7 +384,7 @@ but I still want to link up a template before calling it quits for the evening.
 Create a directory in the root of your crate named `/templates`.
 Now create a template file `templates/layout.html.tera`.
 I'm calling mine `layout` because this will be the base layout for every page.
-If you're familiar with Ruby on Rails, this is similar to the layout erb file.
+If you're familiar with Ruby on Rails, this is similar to the `layout.html.erb` file.
 Other suitable names might be `base.html.tera` or `main.html.tera`.
 
 ```html
@@ -401,11 +403,11 @@ Other suitable names might be `base.html.tera` or `main.html.tera`.
 </html>
 ```
 
-The funky double curly braces in our second `<p></p>` block enables us to take a `tera::Context` and output it to the user.
+Those funky double curly braces in our second `<p></p>` block enable us to take a `tera::Context` and output it to the user.
 This is going to be how we render dynamic content such as a post list or user info.
 Using templates and contexts means we need to modify the code in `main.rs`.
 
-We need to make use of `rocket`'s [fairings] and `tera`'s [Context].
+We need to make use of Rocket's [fairings] and Tera's [Context].
 
 [fairings]: https://rocket.rs/guide/fairings/
 [Context]: http://clux.github.io/blog/tera/struct.Context.html
@@ -452,8 +454,7 @@ error[E0277]: the trait bound `str: std::marker::Sized` is not satisfied
    = help: the trait `std::marker::Sized` is not implemented for `str`
 ```
 
-Ugh. It's saying the second argument to `context.add()` doesn't have a size that can be verified at compile time.
-It apparently needs to know that information.
+Ugh. It's saying the second parameter to `context.add()` doesn't have a size that can be verified at compile time.
 If we check out the rust docs for the [Sized] trait,
 we'll see that it says
 
@@ -461,16 +462,19 @@ we'll see that it says
 
 > Types with a constant size known at compile time.
 
-`Sized` is not implemented for `str`... Hm...
-Let's try converting it to a `String` with `String::from()` or `to_string()`.
+Our second parameter (the message) is a string literal, aka `&str`, aka `string slice`.
+[This] stack overflow post explains `str` has a dynamic length,
+which is why the size is not known at compile time.
+A `String` does have a size at compile time because it has a `capacity`.
+Let's try converting our string literal to a `String` with `String::from()` or `to_string()`.
+Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
 
 ```rust
     context.add("my_message", String::from("Heya from template context!"));
 ```
 
-`String`s have a known size at compile time. Surely this will work!
-Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
 
+[This]: https://stackoverflow.com/questions/24158114/what-are-the-differences-between-rusts-string-and-str
 [`str`]: https://doc.rust-lang.org/1.20.0/book/second-edition/ch04-03-slices.html
 [`String`]: https://doc.rust-lang.org/1.20.0/book/second-edition/ch08-02-strings.html
 
@@ -498,7 +502,28 @@ Okay... Try this. References to the rescue!
     Template::render("layout", &context);
 ```
 
-Niiiice! `cargo run` again and navigate to `localhost:8000` in your browser.
+`cargo run`. Niiiiice! This works, but we could've checked out the docs for [Tera::Context] a little more closely.
+For the `add()` method, the `val` argument accepts a reference(&, remember?) for any type that implements `Serialize`.
+
+*clicks ["Serialize"](https://docs.serde.rs/serde/ser/trait.Serialize.html)*
+
+> A data structure that can be serialized into any data format supported by Serde.
+>
+> Serde provides Serialize implementations for many Rust primitive and standard library types. 
+> The complete list is here. All of these can be serialized using Serde out of the box.
+
+*clicks ["here"](https://docs.serde.rs/serde/ser/index.html)*
+
+Wow, looks like `Serialize` is implemented for both `str` and `String` already.
+Maaaaaybe we didn't have to do the conversion to a `String`?
+
+```rust
+context.add("my_message", &"Heya from template context!");
+```
+
+[Tera::Context]: https://docs.rs/tera/0.8.1/tera/struct.Context.html
+
+Fantastic! `cargo run` again and navigate to `localhost:8000` in your browser.
 You should see not only the content hard-coded into `<p>` tag, but also the `<p>` context content that was generated inside route.
 Templates are working and showing "dynamic" data for us. Thanks for sticking around and reading thus far.
 The very last line of our `index()` function loads & renders the template by pointing to the template path and giving it a reference
@@ -520,3 +545,4 @@ In the next post we will explore
 - [Crates and Cargo](http://doc.crates.io/manifest.html)
 - [Tera Templating Engine](https://github.com/Keats/tera)
 - [Jinja Templating Engine](http://jinja.pocoo.org/) => Inspired tera and shares a lot of the api
+- [serde::ser::Serialize](https://docs.serde.rs/serde/ser/trait.Serialize.html)
