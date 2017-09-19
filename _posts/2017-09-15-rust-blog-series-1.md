@@ -103,7 +103,7 @@ dotenv = "0.10"
 ```
 
 Next we're going to be installing the [diesel_cli] tool which will help us setup the database and run migrations.
-In your command line
+From your CLI
 
 [diesel_cli]: https://github.com/diesel-rs/diesel/tree/master/diesel_cli
 
