@@ -467,7 +467,7 @@ Our second parameter (the message) is a string literal, aka `&str`, aka `string 
 which is why the size is not known at compile time.
 A `String` does have a size at compile time because it has a `capacity`.
 Let's try converting our string literal to a `String` with `String::from()` or `to_string()`.
-Oh also, for reference checkout out the rust docs on [`str`] and [`String`].
+Oh also, for reference checkout the rust docs on [`str`] and [`String`].
 
 ```rust
     context.add("my_message", String::from("Heya from template context!"));
