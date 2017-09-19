@@ -150,7 +150,7 @@ It should be empty at this point.
 Now we should think about our app and what functionality we want to provide.
 I think a good starting point for a blog is creating a `users` and `posts` table.
 A `User` can *have many* `Posts` and in return,
-a `Post` *belongs to* (or "has one") a `User`.
+a `Post` *belongs to* a (or *has one*) `User`.
 I think it might be good to demonstate some basic authorization,
 so we'll want to be able to register new users and perform [CRUD] actions
 on their posts.
