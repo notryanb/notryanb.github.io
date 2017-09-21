@@ -1,6 +1,6 @@
 # Site settings
 title: 'lil bits'
-email: notryan@gmail.com
+email: notryanb@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
   Lil' bits of programming sprinkled with some hardware hacking.
 baseurl: "" # the subpath of your site, e.g. /blog/
