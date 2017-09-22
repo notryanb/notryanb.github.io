@@ -107,7 +107,7 @@ From your CLI
 
 [diesel_cli]: https://github.com/diesel-rs/diesel/tree/master/diesel_cli
 
-> `cargo install diesel_cli --no-default-features --features postgres`.
+> `cargo install diesel_cli --no-default-features --features postgres`
 
 The reason we pass both of those long flags to install is because by default,
 Diesel will assume you want all `sqlite`, `mysql`, and  `postgresql` backends.
