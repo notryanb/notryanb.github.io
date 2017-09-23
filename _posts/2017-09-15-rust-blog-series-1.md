@@ -165,7 +165,7 @@ We're just starting a new app,
 so this is fine for demonstration, but once you're running in production,
 any changes should be made incrementally with small and focused migrations.
 
-> `diesel migrations generate create_users_and_posts`
+> `diesel migration generate create_users_and_posts`
 
 ```
 # CLI Output
@@ -396,7 +396,7 @@ Other suitable names might be `base.html.tera` or `main.html.tera`.
     </head>
     <body>
         <div class="container">
-          <p>Check out this tera Context:<p>
+          <p>Check out this tera Context:</p>
          {% raw %} <p>{{ my_message }}</p>{% endraw %}
         </div>
     </body>
@@ -429,7 +429,7 @@ use tera::Context;
 fn main() {
     rocket::ignite()
         .mount("/", routes![index])
-        .attach(Template.fairing()) // This lets us use templating
+        .attach(Template::fairing()) // This lets us use templating
         .launch();
 }
 
@@ -438,7 +438,7 @@ fn index() -> Template {
     let mut context = Context::new();
 
     context.add("my_message", "Heya from template context!");
-    Template::render("layout", &context);
+    Template::render("layout", &context)
 }
 ```
 
@@ -499,7 +499,7 @@ Okay... Try this. References to the rescue!
 
 ```rust
     context.add("my_message", &String::from("Heya from template context!"));
-    Template::render("layout", &context);
+    Template::render("layout", &context)
 ```
 
 `cargo run`. Niiiiice! This works, but we could've checked out the docs for [Tera::Context] a little more closely.
