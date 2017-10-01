@@ -535,6 +535,10 @@ In the next post we will explore
 - Listing those posts on the index page
 - Creating & understanding a database thread pool
 
+I'd also like to thank github users ianwalker and mycognosist for correcting some errors in this post with a PR.
+If you find any errors or anything unclear about this post, feel free to reach out to me via email or make a PR
+directly to this blog's github repo.
+
 ## <a name="references"></a>References
 
 - [Diesel Getting Started Guide](http://diesel.rs/guides/getting-started/)
