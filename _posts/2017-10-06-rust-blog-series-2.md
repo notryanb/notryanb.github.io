@@ -16,9 +16,140 @@ At the end of this post, we should have completed two fundamental tasks
 - Have a seeded database with users and posts,
 - Output each post title and author to our index page.
 
+## infer_schema!
+
+Our "entry point" for a Diesel applications.
+The Diesel [schema in depth guide] reviews all the options for database schema in greater details.
+All we need to know for the purpose of the guide is...
+
+>infer_schema! is a macro provided by diesel_codegen when you have enabled the feature for one or more database backends.
+The macro will establish a database connection at compile time,
+query for a list of all the tables,
+and generate infer_table_from_schema! for each one.
+infer_schema will skip any table names which start with __.
+
+Using `infer_schema!` will give us some implicit benefits later in development,
+but it's also very easy to get started with,
+which is why we're using it here.
+
+To enable this feature, we must create the file `src/schema.rs'
+
+```rust
+// Inside `src/schema.rs`
+
+infer_schema!("dotenv:DATABASE_URL");
+```
+
+This file will be brought into scope in our `src/lib.rs` file  via a `use` statement
+so we may access our schema from anywhere in our app.
+
+[schema in depth guide]: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/schema-in-depth.md
+
+
+## Database Models
+
+Now that we have a schema, Rust can interact with database tables,
+however that is a little different than interacting with a database model.
+Diesel is a bit different than other ORMS, in that its main focus is on query building.
+Coming from Ruby on Rails (or similar all-in-one frameworks),
+I expected to work with a single object as my database model,
+however in Diesel you should feel comfortable defining specialize structs to support your queries.
+This may seem odd at first, but it should feel more natural by the time we get to designing all CRUD endpoints.
+
+At the moment, we really only care about two database operations; Create and Read.
+This really just amounts to a SQL INSERT and SELECT statments.
+Diesel gives us some nice apis to load a whole row without SELECT,
+so we'll be using those.
+
+We have two database tables, users and posts, and we need to perform two operations on each.
+The data structs for our models *may* look like this.
+- User
+- NewUser
+- Post
+- NewPost
+
+Lets create a `src/models.rs` file and review the code that goes into it.
+
+
+```rust
+// Inside `src/models.rs`
+
+// We JUST made the schema file...
+// Lets take advantage of it by bringing it into scope here
+use schema::{posts, users};
+
+#[derive(Debug, Queryable)]
+struct User {
+    id: i32,
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Insertable)]
+#[table_name="users"]
+struct NewUser {
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Queryable)]
+struct Post {
+    id: i32,
+    user_id: i32,
+    title: String,
+    content: String,
+    published: bool,
+}
+
+#[derive(Debug, Insertable)]
+#[table_name="posts"]
+struct NewPost {
+    user_id: i32,
+    title: String,
+    content: String,
+}
+
+```
+
+If you're thinking *"whoa, whoa, whoa... WUT are those weird DERIVE things?!?!"*,
+don't worry, they're your friend!
+
+The `diesel_codegen` crate... well, generates code for us!
+Rust is strongly typed and has a wonderful trait system which Diesel takes advantage of.
+This gives us compile-time guarantees about all aspects of our models.
+
+`Debug` should look somewhat familiar, as it's basically standard with the Rust langauge.
+The really interesting ones are `Queryable` and `Insertable`.
+`Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
+With `Insertable`, we don't generally include any auto-incrementing primary key columns because our database takes care of that for us.
+
+`Queryable` is also self explanatory.
+A `Queryable` struct is one that may be queried from the database with those fields / columns.
+Our `Queryable` structs share the same name as the table, so the table name is inferred,
+however our `Insertable` structs do not, so we must annotate them with the table they correspond to.
+Our current code is very basic and we'll just select all columns for now when querying.
+
+Diesel supports nearly all database column types and maps them to Rust values.
+We're going to primarily be using `i32`, and `String`, but you'll see we will eventually use
+`&str`, and datetime types from the `chrono` crate.
+Diesel supports custom types, but this requires some impls on your part.
+We will not be covering advanced cases like that in this blog series.
+
+One small thing to note is our `NewPost` struct is missing the `published` field.
+This is because it has a default value of `FALSE`.
+Thinking ahead a little, we will want a feature of the app to publish posts after they are done.
+This is one way of keeping posts in a *draft* state.
+[This document] covers all the model derives in much more detail.
+
+[This document]: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/model-derives.md
+
 ## Database Connection
 
-The first thing we need to consider is our database connection.
+The first thing we need to consider when linking Rocket to Diesel is our database connection.
 Without this part of our application,
 the Rocket framework will never be able to work with the Diesel framework and our backend database.
 
@@ -116,7 +247,7 @@ We'll be using the r2d2-diesel library to manage the connection pool to our Post
 [r2d2-diesel]: https://github.com/diesel-rs/r2d2-diesel
 
 Our immediate goal:
-- set up a database connection pool with Rocket so it may talk to Diesel
+- set up a database connection pool so Rocket may pass around connections to Postgres
 
 Be forewarned, I'm going to make an arbitrary design decision here and put all our connection logic into `src/lib.rs`.
 This will leave `src/bin/main.rs` to hold all the Rocket initialization / setup.
@@ -142,7 +273,7 @@ I won't replicate that code here, because it can get long and we're going to bui
 
 
 [Rocket Request Guards]: https://rocket.rs/guide/requests/#request-guards
-['from_request()`]: /from_requestFIXME
+[`from_request()`]: /from_requestFIXME
 With further ado, check out our code!
 
 [Rocket Managed State and Connection Guard]: https://rocket.rs/guide/state/#managed-pool
@@ -171,6 +302,12 @@ extern crate r2d2_diesel;
 // Rocket lib + api
 extern crate rocket;
 extern crate rocket_contrib;
+
+// These two mod declarations re-export those files / modules.
+// schema contains the `infer_schema!` macro to help generate table apis.
+// models will be our database models
+pub mod schema;
+pub mod models;
 
 // Bring each necessary module into scope.
 // These will be modules we reference in the rest of the file
@@ -282,6 +419,9 @@ extern crate r2d2;
 extern crate r2d2_diesel;
 extern crate rocket;
 extern crate rocket_contrib;
+
+pub mod schema;
+pub mod models;
 
 use dotenv::dotenv;
 use diesel::prelude::*;
@@ -473,38 +613,6 @@ use lil_lib::*;
 // These model declarations will eventually be moved into a `src/models.rs` file
 // or into feature sub-folders. That will be a refactoring for another time.
 
-#[derive(Debug, Queryable)]
-struct User {
-    id: i32,
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
-}
-
-#[derive(Debug, Insertable)]
-struct NewUser {
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
-}
-
-#[derive(Debug, Queryable)]
-struct Post {
-    id: i32,
-    user_id: i32,
-    title: String,
-    content: String,
-    published: bool,
-}
-
-#[derive(Debug, Insertable)]
-struct NewPost {
-    user_id: i32,
-    title: String,
-    content: String,
-}
 
 fn main() {
     // Remember that `infer_schema!` macro from the first post?
