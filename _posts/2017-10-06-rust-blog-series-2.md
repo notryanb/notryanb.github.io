@@ -290,7 +290,7 @@ I won't replicate that code here, because it can get long and we're going to bui
 [Rocket Request Guards]: https://rocket.rs/guide/requests/#request-guards
 [Managed State]: https://rocket.rs/guide/state/
 [`from_request()`]: /from_requestFIXME
-With further ado, check out our code!
+Without further ado, check out our code!
 
 [Rocket Managed State and Connection Guard]: https://rocket.rs/guide/state/#managed-pool
 
