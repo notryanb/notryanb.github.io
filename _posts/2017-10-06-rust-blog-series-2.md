@@ -595,7 +595,7 @@ fn main() {
      // Create personal login
      let me = NewUser {
          first_name: "Ryan".to_string(),
-         last_name: "Blecher".to_string(),
+         last_name: "B".to_string(),
          email: "notryanb@gmail.com".to_string(),
          password: hashed_password.to_string(),
      };
@@ -733,7 +733,7 @@ Mwuaahaha... ehh. Well, this is the error we're going to see.
     </head>
     <body>
         <div class="container">
-          <h1>MOAR POSTS AND USERS!</h1>
+          <h1>MOAR POSTS AND USERS!</h1>{% raw %}
           {% for user in users %}
             <p>{{ user.first_name }} {{ user.last_name }} - {{ user.email }}</p>
           {% endfor %}
@@ -741,11 +741,13 @@ Mwuaahaha... ehh. Well, this is the error we're going to see.
           {% for post in posts %}
             <h2>{{ post.title }}</h2>
             <p>{{ post.content }}</p>
-          {% endfor %}
+          {% endfor %}{% endraw %}
         </div>
     </body>
 </html>
 ```
+
+Now give this a try
 
 > cargo run --bin main
 
@@ -754,17 +756,21 @@ error[E0277]: the trait bound `lil_lib::models::Post: serde::ser::Serialize` is 
   --> src/bin/main.rs:35:13
    |
 35 |     context.add("posts", &post_list);
-   |             ^^^ the trait `serde::ser::Serialize` is not implemented for `lil_lib::models::Post`
+   |             ^^^ the trait `serde::ser::Serialize` is not implemented 
+for `lil_lib::models::Post`
    |
-   = note: required because of the requirements on the impl of `serde::ser::Serialize` for `std::vec::Vec<lil_lib::models::Post>`
+   = note: required because of the requirements on the impl of `serde::ser::Serialize` 
+            for `std::vec::Vec<lil_lib::models::Post>`
 
 error[E0277]: the trait bound `lil_lib::models::User: serde::ser::Serialize` is not satisfied
   --> src/bin/main.rs:36:13
    |
 36 |     context.add("users", &user_list);
-   |             ^^^ the trait `serde::ser::Serialize` is not implemented for `lil_lib::models::User`
+   |             ^^^ the trait `serde::ser::Serialize` is not implemented 
+for `lil_lib::models::User`
    |
-   = note: required because of the requirements on the impl of `serde::ser::Serialize` for `std::vec::Vec<lil_lib::models::User>`
+   = note: required because of the requirements on the impl of `serde::ser::Serialize` 
+            for `std::vec::Vec<lil_lib::models::User>`
 
 error: aborting due to 2 previous errors
 ```
@@ -888,9 +894,9 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
     let config = Config::default();
     let manager = ConnectionManager::<PgConnection>::new(database_url);
+
     Pool::new(config, manager).expect("Failed to create pool.")
 }
 
@@ -953,8 +959,8 @@ fn index(connection: DbConn) -> Template {
     let post_list = posts.load::<Post>(&*connection).expect("Error loading posts");
     let user_list = users.load::<User>(&*connection).expect("Error loading users");
   
-    context.add("posts",&post_list);
-    context.add("users",&user_list);
+    context.add("posts", &post_list);
+    context.add("users", &user_list);
 
     Template::render("layout", &context)
 }
@@ -964,7 +970,7 @@ fn index(connection: DbConn) -> Template {
 
 use schema::{posts, users};
 
-#[derive(Debug, Queryable, Serialze)]
+#[derive(Debug, Queryable, Serialize)]
 struct User {
     id: i32,
     first_name: String,
@@ -1001,3 +1007,89 @@ struct NewPost {
 
 ```
 
+```rust
+// `src/bin/seed.rs`
+
+extern crate lil_lib;
+extern crate bcrypt; 
+extern crate diesel;
+#[macro_use] extern crate fake;
+
+use bcrypt::{DEFAULT_COST, hash};
+use diesel::prelude::*;
+use lil_lib::*;
+use lil_lib::models;
+
+fn main() {
+    use schema::posts::dsl::*;
+    use schema::users::dsl::*;
+    
+    let connection = create_db_pool().get().unwrap();
+    let plain_text_pw = "testing";
+    let hashed_password = match hash (plain_text_pw, DEFAULT_COST) {
+        Ok(hashed) => hashed,
+        Err(_) => panic!("Error hashing")
+    };
+
+    diesel::delete(posts).execute(&*connection).expect("Error deleteing posts");
+    diesel::delete(users).execute(&*connection).expect("Error deleteing users");
+
+    fn generate_user_info(pw: &str) -> NewUser {
+        NewUser {
+            first_name: fake!(Name.name),
+            last_name: fake!(Name.name),
+            email: fake!(Internet.free_email),
+
+            password: pw.to_string(),
+         }
+     }
+
+    fn generate_post_info(uid: i32) -> NewPost {
+        NewPost {
+          user_id: uid,
+          title: fake!(Lorem.sentence(1, 4)),
+          content: fake!(Lorem.paragraph(5,5)),
+        }
+    }
+
+    let me = NewUser {
+        first_name: "Ryan".to_string(),
+        last_name: "B".to_string(),
+        email: "notryanb@gmail.com".to_string(),
+        password: hashed_password.to_string(),
+    };
+
+    diesel::insert(&me)
+        .into(users)
+        .execute(&*connection)
+        .expect("Error inserting users");
+
+    let new_user_list: Vec<NewUser> = (0..10)
+        .map( |_| generate_user_info(&hashed_password))
+        .collect();
+
+    let returned_users = diesel::insert(&new_user_list)
+        .into(users)
+        .get_results::<User>(&*connection)
+        .expect("Error inserting users");
+
+    let new_post_list: Vec<NewPost> = returned_users
+        .into_iter()
+        .map(|user| generate_post_info(user.id))
+        .collect();
+
+    diesel::insert(&new_post_list)
+        .into(posts)
+        .execute(&*connection)
+        .expect("Error inserting posts");
+}
+
+```
+
+```rust
+// Inside `src/schema.rs`
+
+infer_schema!("dotenv:DATABASE_URL");
+```
+
+## <a name="references"></a>References
