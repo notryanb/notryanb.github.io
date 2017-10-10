@@ -239,8 +239,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
         // Here were are using the `get()` method from the connection pool to grab 
         // the connection. If it's Ok, return the DbConn tuple-struct we made
         // wrapped in an `Outcome` to conform to the function signature.
-        // If the `get()` returns an error, we're giving back  a tuple with the
-        // signature (FailureType, ())
+        // If the `get()` returns an Error, we're returning a tuple with the
+        // signature (SomeFailureType, ())
         match pool.get() {
             Ok(conn) => Outcome::Success(DbConn(conn)),
             Err(_) => Outcome::Failure((Status::ServiceUnavailable, ())),
@@ -326,3 +326,278 @@ impl Deref for DbConn {
 }
 ```
 
+Run either `cargo run` or `cargo build` at this point to compile the app.
+You should still see the same output from the previous blog post,
+as we haven't changed anything from the perspective of a visiting user.
+The last objective which ties everything together will be seeding the database
+and outputting that seed data to the user.
+
+## Seeding the Database
+
+ Seeding the database is really only used for the dev environment, but may also be applicable for test environments as well.
+If you're unsure what seeding the database is; well, it's just generating a bunch of data to fill our database.
+It might be hard to develop this app if we didn't have any posts or users to load,
+especially if we want to experiment with different SQL queries or do some UI/UX design!
+
+There are a number of ways to go about seeding, but from my experience in the Ruby on Rails world,
+I decided to go with a seed file. 
+
+Go ahead and make a `src/bin/seed.rs` rust file.
+
+We're adding this file to the `bin` directory, so we'll have to make some adjustments to `Cargo.toml` to alert
+Cargo that we have another bin. This will mean that we need to be a little more verbose when compiling/running.
+Instead of `cargo run` or `cargo build`, we'll be typing `cargo run --bin seed` or `cargo run --bin main`.
+The last argument being passed in is the name of the `bin` that we want to run or build.
+I'm arbitrarily naming them `seed` and `main`, but you'll see we can name these whatever we want.
+Let's take a look at what needs to be added to `Cargo.toml`.
+
+```rust
+// Inside `Cargo.toml`
+
+[package]
+name = "lil blog"
+version = "0.1.0"
+authors = ["Ryan B <notryanb@gmail.com>"]
+
+// Here we've renamed the lil_blog bin to `main`
+// `cargo run --bin main` will point to the path we define here
+[[bin]]
+name = "main"
+path = "src/bin/main.rs"
+
+// Here we've added a new bin to target named `seed`
+// `cargo run --bin seed` will point to the path we define here
+[[bin]]
+name = "seed"
+path = "src/bin/seed.rs"
+
+[lib]
+name = "lil_lib"
+path = "src/lib.rs"
+
+[dependencies]
+# Server
+rocket = "0.3.2"
+rocket_codegen = "0.3.2"
+rocket_contrib = { version = "0.3.2", default-features = false, features = ["tera_templates"] }
+serde = "1.0.11"
+serde_derive = "1.0.11"
+serde_json = "1.0.2"
+tera = "0.10"
+
+# DB
+diesel = { version = "0.16", features = ["postgres"] }
+diesel_codegen = { version = "0.16", features = ["postgres"] }
+r2d2 = "*"
+r2d2-diesel = "*"
+
+// Adding the fake crate for seeding purposes.
+// This crate will randomly generate all types of information for us
+// Docs: https://github.com/cksac/fake-rs
+fake = "*"
+
+# SYS
+dotenv = "0.10"
+
+```
+
+Our seed file needs to accomplish two things.
+- Generate a bunch of users
+- Generate a bunch of posts
+
+Very simple! Actually, we'll see we need to make a few design decisions once we get into that file.
+All of those decisions will be addressed in the code comments,
+so you should be able to read the file top-to-bottom and hopefully
+follow my crazy thought process.
+
+```rust
+//Inside `src/bin/seed.rs`
+
+// First thing we need to do is import some more crates.
+// This file is essentially stand-alone code and ideally will
+// not be run very often.
+
+// This is our lib file and the name we gave it from `Cargo.toml`
+// We need this import for the `create_db_pool()` function we just made!
+extern crate lil_lib;
+
+// We will be doing some work in the database, so we need diesel here
+extern crate diesel;
+#[macro_use] extern crate diesel_codegen;
+
+// bcrypt is used for secure hashing of passwords.
+// Important for user creation (...and security!!!!)
+extern crate bcrypt; 
+
+// The `fake` crate makes heavy use of rust macros for its api,
+// so we'll need that `#[macro_use]` prefix to use them.
+#[macro_use] extern crate fake;
+
+
+// These are the modules we'll need to bring into scope.
+// They will be apparent from their use in the soon-to-be-written code
+use bcrypt::{DEFAULT_COST, hash};
+use diesel::prelude::*;
+use lil_lib::*;
+
+
+// Right now we have no "database models". There is no way for our rust
+// code to interface with SQL / Postgres, but we did import the Diesel library.
+// In order to start interfacing with the DB, we need to create some data structures
+// that the Diesel library will "know" it can INSERT into and query from the database.
+//
+// I HIGHLY recommend reviewing the Diesel "Getting started" guide before going further:
+// URL: http://diesel.rs/guides/getting-started/
+//
+// The following Rust Structs will have the type annotations needed
+// to get te data into the database. We will not cover WHY in detail yet,
+// as I will be covering this in the next part of the blog series.
+//
+// In short, here are the reasons for each `derive`
+//    - Debug: So we can output the struct using `println!()`
+//    - Insertable: So Diesel can take the struct values and enable them to be used
+//                  in a SQL INSERT statement.
+//    - Queryable:  So Diesel can `load()` our query from database if we want.
+//
+// IMPORTANT NOTE #1:
+// In Diesel apps, it's NORMAL to have several specialized structs versues having a single
+// backend User or Post model to perform all CRUD operations.
+// This may be funny-looking or counter-intuitive coming from a more traditional ORM.
+// The pattern will become more apparent as we develop the main portions of the app, but now
+// just observe the struct names and their fields.
+// If you're very interested in all the `derives` Diesel offers,
+// check out the derive guide.
+// URL: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/model-derives.md
+//
+// IMPORTANT NOTE #2:
+// These model declarations will eventually be moved into a `src/models.rs` file
+// or into feature sub-folders. That will be a refactoring for another time.
+
+#[derive(Debug, Queryable)]
+struct User {
+    id: i32,
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Insertable)]
+struct NewUser {
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Queryable)]
+struct Post {
+    id: i32,
+    user_id: i32,
+    title: String,
+    content: String,
+    published: bool,
+}
+
+#[derive(Debug, Insertable)]
+struct NewPost {
+    user_id: i32,
+    title: String,
+    content: String,
+}
+
+fn main() {
+    // Remember that `infer_schema!` macro from the first post?
+    // Here, we bring all the awesome Diesel generated apis into scope.
+    use schema::posts::dsl::*;
+    use schema::users::dsl::*;
+
+    // This is going to be our database connection that we worked so hard
+    // on in the `src/lib.rs` file.
+    let connection = create_db_pool().get().unwrap();
+
+    // We want to store a password on the User records, but NOT THE PLAIN TEXT PW!!!
+    // We must have an easy password for dev environments, but also follow the secure
+    // practice of hashing passwords. 
+    // Here we create a string and then hash it using the `bcrypt` library.
+    let plain_text_pw = "testing";
+    let hashed_password = match hash (plain_text_pw, DEFAULT_COST) {
+        Ok(hashed) => hashed,
+        Err(_) => panic!("Error hashing")
+    };
+
+
+    // I like to clear out the database before each time I run the seed file. 
+    // Posts goes first here because we will eventually be making use
+    // of foreign key restrictions
+    diesel::delete(posts).execute(&*connection).expect("Error deleteing posts");
+    diesel::delete(users).execute(&*connection).expect("Error deleteing users");
+
+     // Randomly generate user info.
+     // `fake!()` macro will return a String value for us to insert into the DB.
+     fn generate_user_info(pw: &str) -> NewUser {
+         NewUser {
+            first_name: fake!(Name.name),
+            last_name: fake!(Name.name),
+            email: fake!(Internet.free_email),
+
+            // the password being passed in is a &str, aka slice.
+            // We must convert it to String.
+            password: pw.to_string(),
+         }
+     }
+
+     // Randomly generate post info
+     fn generate_post_info(user: User) -> NewPost {
+         let _title = &fake!(Lorem.sentence(1, 4))[..];
+         let _content = &fake!(Lorem.paragraph(5,5))[..];
+
+         NewPost {
+            user_id: user.id,
+            title: _title.to_string(),
+            content: _content.to_string(),
+         }
+     }
+
+     // Create personal login
+     let me = NewUser {
+         first_name: "Ryan".to_string(),
+         last_name: "Blecher".to_string(),
+         email: "notryanb@gmail.com".to_string(),
+         password: hashed_password.to_string(),
+     };
+
+     // Using Diesel Insert api to create an INSERT statement
+     // and execute with the connection. 
+     // NOTE: This api form will be deprecated for Diesel 1.0.
+     // Check Diesel docs, as it's currently in master now.
+     diesel::insert(&me)
+         .into(users)
+         .execute(&*connection)
+         .expect("Error inserting users");
+
+     // Create 10 randomly generated users stored as a vec
+     let new_user_list: Vec<BulkNewUser> = (0..10)
+         .map( |_| generate_user_info(&hashed_password))
+         .collect();
+
+     // Insert that vec of users and get a vec back of the newely inserted users.
+     let returned_users = diesel::insert(&new_user_list)
+         .into(users)
+         .get_results::<User>(&*connection)
+         .expect("Error inserting users");
+
+     // For each of the new users, create some posts
+     let new_post_list: Vec<BulkNewPost> = returned_users
+         .into_iter()
+         .map(|user| generate_post_info(user))
+         .collect();
+
+      // Insert those posts
+      diesel::insert(&new_post_list)
+          .into(posts)
+          .execute(&*connection)
+          .expect("Error inserting posts");
+}
+
+```
