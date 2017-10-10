@@ -784,7 +784,7 @@ We need to add the `serde_derive` library and *derive* `Serialize` for the User 
 
 [`Context::add`]: http://clux.github.io/blog/tera/struct.Context.html#method.add
 
-We already a few serde libs in our `Cargo.toml`,
+We already have a few serde libs in our `Cargo.toml`,
 so we just need to import one for now and bring the important parts into scope.
 Please open up your lib.rs file.
 
