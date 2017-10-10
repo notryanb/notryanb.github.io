@@ -777,9 +777,12 @@ error: aborting due to 2 previous errors
 
 Sorry! I knew this would happen!!!
 Each error is pointing to the fact that we need to `Serialize` our lists.
+The [`Context::add`] docs will show us that exact trait bound.
 When the response is sent over the wire, we can't transmit an actual rust Struct,
 but we can transmit some serialized data whether it's text, json, etc.
 We need to add the `serde_derive` library and *derive* `Serialize` for the User and Post structs.
+
+[`Context::add`]: http://clux.github.io/blog/tera/struct.Context.html#method.add
 
 We already a few serde libs in our `Cargo.toml`,
 so we just need to import one for now and bring the important parts into scope.
