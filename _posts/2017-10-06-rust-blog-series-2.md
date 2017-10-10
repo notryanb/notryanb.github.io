@@ -230,18 +230,19 @@ our Postgres database!
 ## Connection Pools
 
 The previous code works well in isolation, but also poses some scalability problems.
-I think I remember reading somewhere that establishing a database connection is expensive and it also takes some time.
+I think I [remember reading somewhere] that establishing a database connection is expensive.
 We don't really want every single visitor to our blog opening up a new connection everytime they hit a route.
 What we need is a [Connection Pool].
 Connection pools are a *cache* / store of connections that stick around
-and can be reused to help enhance the performance of exeuting commands on our database.
+and can be reused to help enhance the performance of executing commands on our database.
 When a connection is needed, it is plucked from the pool, used,
 and then returned back to be available for another connection.
 
+[remember reading somewhere]: https://stackoverflow.com/questions/34303678/database-connection-expensive-to-create
 [Connection Pool]: https://en.wikipedia.org/wiki/Connection_pool
 
 [r2d2] is a generic connection pool library for Rust and it happens to have an adapter for Diesel, [r2d2-diesel]!
-We'll be using the r2d2-diesel library to manage the connection pool to our Postgres database.
+We'll be using the both libraries to manage the connection pool to our Postgres database.
 
 [r2d2]: https://github.com/sfackler/r2d2
 [r2d2-diesel]: https://github.com/diesel-rs/r2d2-diesel
@@ -254,25 +255,40 @@ This will leave `src/bin/main.rs` to hold all the Rocket initialization / setup.
 Consequently, all of our app business logic will be pulled together in `lib.rs` from other modules,
 leaving most of our files focused and arranged by features.
 
-I *would* like to cover [Rocket Request Guards] before we get started,
+Remember `src/schema.rs` and `src/models.rs`?
+They will both be re-exported by our `lib` so various parts of our application may make use of them.
+
+I should cover [Rocket Request Guards] and [Managed State] before we get started,
 because they're fundamental to any Rocket application - even at this stage.
-Request guards are similar to middleware, in that they intercept requests.
+Request guards are *similar* to middleware, in that they intercept requests.
+A request guard is mainly used for request validation and can force redirection based on their outcome.
 The validation policy can be built in, like we see from standard rocket request objects,
-or we can implement our own custom validation policies.
+or we can implement our own custom validation policies like we will for passing the connection pool.
 
 Any type that implements the `FromRequest` trait is a request guard.
-This is something we'll be using on our database connection to ensure type safety for every request.
+It is important to note that we won't be implementing this trait directly on our database connection.
+Our database connection is *state* that will passed around,
+however we can wrap it in a type that we want to use as a request guard.
+It is this container that we will use as the type to validate.
+
 In order for us to implement `FromRequest`,
 we must define the [`from_request()`] required method.
-This will become more interesting in later posts when we ensure user authentication
+Request guards will become more interesting later in this blod series when we ensure user authentication
 via the type system! =)
+
+Managed State is a vague term, but it's also literally... managed state.
+This means that Rocket will keep track of the state of a type for the duration of our application.
+When our app boots, the State will be managed as long as our app is running.
+We can access this application state from within our request guards via the `request::guard::<State<T>>()` method.
+Without even writing this code yet, we know each request guard will take in a Request object, with a guard property,
+that manages some State<T>.
 
 Before you jump down to the next section, which will be quite a bit of code, let's have a look at the [Rocket
 Managed State and Connection Guard] documentation to see if this can help us out. 
 I won't replicate that code here, because it can get long and we're going to build a slightly modified version.
 
-
 [Rocket Request Guards]: https://rocket.rs/guide/requests/#request-guards
+[Managed State]: https://rocket.rs/guide/state/
 [`from_request()`]: /from_requestFIXME
 With further ado, check out our code!
 
@@ -305,7 +321,9 @@ extern crate rocket_contrib;
 
 // These two mod declarations re-export those files / modules.
 // schema contains the `infer_schema!` macro to help generate table apis.
-// models will be our database models
+// models are be our database models we setup in `src/models.rs`
+// We re-export so any file that includes this `lib.rs`, may have access
+// to these as well.
 pub mod schema;
 pub mod models;
 
@@ -322,8 +340,8 @@ use std::env;
 use std::ops::Deref;
 
 
-// This should look vaguely familiar, but we're setting up a connection pool
-// instead of a single connection.
+// This should look somewhat similar to the diesel establish_connection() example, 
+// but we're setting up a connection pool instead of a single connection.
 // Notice the return type is r2d2::Pool of type r2d2_diesel::ConnectionManager
 // of type diesel::pg::PgConnection.
 // We imported all those modules to avoid the nasty prefixing.
@@ -347,7 +365,7 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
 
 // This is the struct we will be passing around as a request guard.
 // DbConn is a tuple-struct, which only has one field.
-// It is accessed by `my_tuple_struct.0` and will serve as a wrapper
+// It is accessed with the notation `my_tuple_struct.0` and will serve as a wrapper
 // to implent the FromRequest trait on.
 pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
 
@@ -386,12 +404,18 @@ impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
 }
 
 
-// This is not as intuitive, but because our connection is wrapped up
-// in the connection pool, we have a few layers of indirection between
-// the DbConn tuple-struct and the actual PgConnection. 
+// This is not immediately apparent, but because our connection is wrapped up
+// in a PooledConnection, we have a few layers of indirection between
+// the DbConn tuple-struct and the actual PgConnection.
 //
-// We implement Deref because we want that PgConnection directly.
-// This enables us to write `&*connection_variable` when we want
+// PooledConnection is a smart pointer referencing a connection.
+// Doc: https://docs.rs/r2d2/0.7.4/r2d2/struct.PooledConnection.html
+//
+// We implement Deref because we want that PgConnection directly and it's behind a smart pointer.
+// PooledConnection already implements Deref to do this, but our Managed State has a hold of
+// DbConn, the wrapper!
+//
+// Implementing Deref for DbConn enables us to write `&*connection_variable` when we want
 // to get at the actual connection.
 // Deref Rust Docs: https://doc.rust-lang.org/std/ops/trait.Deref.html
 impl Deref for DbConn {
@@ -404,78 +428,16 @@ impl Deref for DbConn {
 
 ```
 
-Below is the file without comments
-
-```rust
-#![feature(plugin, custom_derive)]
-#![plugin(rocket_codegen)]
-
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate diesel_codegen;
-extern crate dotenv;
-extern crate r2d2;
-extern crate r2d2_diesel;
-extern crate rocket;
-extern crate rocket_contrib;
-
-pub mod schema;
-pub mod models;
-
-use dotenv::dotenv;
-use diesel::prelude::*;
-use r2d2::{Config, Pool, PooledConnection};
-use r2d2_diesel::ConnectionManager;
-use rocket::{Outcome, Request, State};
-use rocket::http::Status;
-use rocket::request::{self, FromRequest};
-use std::env;
-use std::ops::Deref;
-
-pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
-    dotenv().ok();
-
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    let config = Config::default();
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::new(config, manager).expect("Failed to create pool.")
-}
-
-pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
-
-impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<DbConn, ()> {
-        let pool = request.guard::<State<Pool<ConnectionManager<PgConnection>>>>()?;
-        match pool.get() {
-            Ok(conn) => Outcome::Success(DbConn(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ())),
-        }
-    }
-}
-
-impl Deref for DbConn {
-    type Target = PgConnection;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-```
-
 Run either `cargo run` or `cargo build` at this point to compile the app.
-You should still see the same output from the previous blog post,
+You should still see the same output from the previous blog post if you're running it,
 as we haven't changed anything from the perspective of a visiting user.
 The last objective which ties everything together will be seeding the database
 and outputting that seed data to the user.
 
 ## Seeding the Database
 
- Seeding the database is really only used for the dev environment, but may also be applicable for test environments as well.
-If you're unsure what seeding the database is; well, it's just generating a bunch of data to fill our database.
+Seeding the database is really only used for the dev environment, but may also be applicable for test environments as well.
+If you're unsure what seeding the database is - it's just generating a bunch of dummy data to fill our database.
 It might be hard to develop this app if we didn't have any posts or users to load,
 especially if we want to experiment with different SQL queries or do some UI/UX design!
 
@@ -485,7 +447,7 @@ I decided to go with a seed file.
 Go ahead and make a `src/bin/seed.rs` rust file.
 
 We're adding this file to the `bin` directory, so we'll have to make some adjustments to `Cargo.toml` to alert
-Cargo that we have another bin. This will mean that we need to be a little more verbose when compiling/running.
+Cargo that we have another bin. The consequence of this is we need to be a little more verbose when compiling/running.
 Instead of `cargo run` or `cargo build`, we'll be typing `cargo run --bin seed` or `cargo run --bin main`.
 The last argument being passed in is the name of the `bin` that we want to run or build.
 I'm arbitrarily naming them `seed` and `main`, but you'll see we can name these whatever we want.
@@ -545,13 +507,13 @@ Our seed file needs to accomplish two things.
 - Generate a bunch of users
 - Generate a bunch of posts
 
-Very simple! Actually, we'll see we need to make a few design decisions once we get into that file.
+Sounds simple?! Actually, we'll see we need to make a few design decisions once we get into that file.
 All of those decisions will be addressed in the code comments,
-so you should be able to read the file top-to-bottom and hopefully
-follow my crazy thought process.
+so you should be able to read the file top-to-bottom and follow logically.
+
 
 ```rust
-//Inside `src/bin/seed.rs`
+// `src/bin/seed.rs`
 
 // First thing we need to do is import some more crates.
 // This file is essentially stand-alone code and ideally will
@@ -561,62 +523,28 @@ follow my crazy thought process.
 // We need this import for the `create_db_pool()` function we just made!
 extern crate lil_lib;
 
+// bcrypt is used for secure hashing of passwords.
+// Important for password security
+extern crate bcrypt; 
+
 // We will be doing some work in the database, so we need diesel here
 extern crate diesel;
-#[macro_use] extern crate diesel_codegen;
-
-// bcrypt is used for secure hashing of passwords.
-// Important for user creation (...and security!!!!)
-extern crate bcrypt; 
 
 // The `fake` crate makes heavy use of rust macros for its api,
 // so we'll need that `#[macro_use]` prefix to use them.
 #[macro_use] extern crate fake;
-
 
 // These are the modules we'll need to bring into scope.
 // They will be apparent from their use in the soon-to-be-written code
 use bcrypt::{DEFAULT_COST, hash};
 use diesel::prelude::*;
 use lil_lib::*;
-
-
-// Right now we have no "database models". There is no way for our rust
-// code to interface with SQL / Postgres, but we did import the Diesel library.
-// In order to start interfacing with the DB, we need to create some data structures
-// that the Diesel library will "know" it can INSERT into and query from the database.
-//
-// I HIGHLY recommend reviewing the Diesel "Getting started" guide before going further:
-// URL: http://diesel.rs/guides/getting-started/
-//
-// The following Rust Structs will have the type annotations needed
-// to get te data into the database. We will not cover WHY in detail yet,
-// as I will be covering this in the next part of the blog series.
-//
-// In short, here are the reasons for each `derive`
-//    - Debug: So we can output the struct using `println!()`
-//    - Insertable: So Diesel can take the struct values and enable them to be used
-//                  in a SQL INSERT statement.
-//    - Queryable:  So Diesel can `load()` our query from database if we want.
-//
-// IMPORTANT NOTE #1:
-// In Diesel apps, it's NORMAL to have several specialized structs versues having a single
-// backend User or Post model to perform all CRUD operations.
-// This may be funny-looking or counter-intuitive coming from a more traditional ORM.
-// The pattern will become more apparent as we develop the main portions of the app, but now
-// just observe the struct names and their fields.
-// If you're very interested in all the `derives` Diesel offers,
-// check out the derive guide.
-// URL: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/model-derives.md
-//
-// IMPORTANT NOTE #2:
-// These model declarations will eventually be moved into a `src/models.rs` file
-// or into feature sub-folders. That will be a refactoring for another time.
-
+use lil_lib::models;
 
 fn main() {
     // Remember that `infer_schema!` macro from the first post?
-    // Here, we bring all the awesome Diesel generated apis into scope.
+    // Here, we bring all the awesome Diesel generated apis into scope
+    // so we can interact with the database tables
     use schema::posts::dsl::*;
     use schema::users::dsl::*;
 
@@ -627,21 +555,21 @@ fn main() {
     // We want to store a password on the User records, but NOT THE PLAIN TEXT PW!!!
     // We must have an easy password for dev environments, but also follow the secure
     // practice of hashing passwords. 
-    // Here we create a string and then hash it using the `bcrypt` library.
+    // Here we create a `&str` and then hash it using the `bcrypt` library.
     let plain_text_pw = "testing";
     let hashed_password = match hash (plain_text_pw, DEFAULT_COST) {
         Ok(hashed) => hashed,
         Err(_) => panic!("Error hashing")
     };
 
-
     // I like to clear out the database before each time I run the seed file. 
     // Posts goes first here because we will eventually be making use
-    // of foreign key restrictions
+    // of foreign key constraints. The reverse order will throw errors in the DB.
     diesel::delete(posts).execute(&*connection).expect("Error deleteing posts");
     diesel::delete(users).execute(&*connection).expect("Error deleteing users");
 
      // Randomly generate user info.
+     // Pass in the hashed password.
      // `fake!()` macro will return a String value for us to insert into the DB.
      fn generate_user_info(pw: &str) -> NewUser {
          NewUser {
@@ -656,14 +584,11 @@ fn main() {
      }
 
      // Randomly generate post info
-     fn generate_post_info(user: User) -> NewPost {
-         let _title = &fake!(Lorem.sentence(1, 4))[..];
-         let _content = &fake!(Lorem.paragraph(5,5))[..];
-
+     fn generate_post_info(uid: i32) -> NewPost {
          NewPost {
-            user_id: user.id,
-            title: _title.to_string(),
-            content: _content.to_string(),
+            user_id: uid,
+            title: fake!(Lorem.sentence(1, 4)),
+            content: fake!(Lorem.paragraph(5,5)),
          }
      }
 
@@ -685,20 +610,21 @@ fn main() {
          .expect("Error inserting users");
 
      // Create 10 randomly generated users stored as a vec
-     let new_user_list: Vec<BulkNewUser> = (0..10)
+     let new_user_list: Vec<NewUser> = (0..10)
          .map( |_| generate_user_info(&hashed_password))
          .collect();
 
-     // Insert that vec of users and get a vec back of the newely inserted users.
+     // INSERT that vec of users and get a vec back of the newely inserted users.
+     // They will have ids that we can assign to the posts.
      let returned_users = diesel::insert(&new_user_list)
          .into(users)
          .get_results::<User>(&*connection)
          .expect("Error inserting users");
 
      // For each of the new users, create some posts
-     let new_post_list: Vec<BulkNewPost> = returned_users
+     let new_post_list: Vec<NewPost> = returned_users
          .into_iter()
-         .map(|user| generate_post_info(user))
+         .map(|user| generate_post_info(user.id))
          .collect();
 
       // Insert those posts
@@ -709,3 +635,369 @@ fn main() {
 }
 
 ```
+
+If you'd like the visual feedback, add some `println!()` macros after the INSERTS or queries for confirmation from the seed file.
+We'll be confirming directly from Postgres.
+Get into your database via the Postgres CLI with the following command.
+Make sure to use the database name that is in your DATABASE_URL.
+
+> psql lil_blog
+
+Once logged in, you should be able to run both of these commands and get back some nice table data.
+
+> SELECT * FROM users;
+
+Queries and returns user data
+
+> SELECT * FROM posts;
+
+Queries and returns post data
+
+Woohoo! Wow, pretty impressive. We have one last step. Lets take a quick breather and review what was done so far.
+
+- Setup / generated database schema via Diesel macros
+- Created models file which has all of the models we currently need for seeding.
+- Setup out Postgres connection pool.
+- Configured a Rocket request guard that wraps our database connection
+- Update our dependencies
+- Seeded the database.
+
+The app is done, shipit! :P
+
+Lets direct out attention back to `src/bin/main.rs` and connect our state and log some posts / users.
+
+```rust
+// Inside `src/bin/main.rs`
+
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+extern crate lil_blog;
+extern crate diesel;
+extern crate rocket;
+extern crate rocket_contrib;
+extern crate tera;
+
+use diesel::prelude::*;
+use lil_blog::*;
+use lil_blog::models::*;
+use rocket_contrib::Template;
+use tera::Context;
+
+fn main() {
+    rocket::ignite()
+        .manage(create_db_pool()) // Register connection pool with Managed State
+        .mount("/", routes![index])
+        .attach(Template::fairing())
+        .launch();
+}
+
+
+// Check out our DbConn Request Guard!
+// Our route now has access to a database connection.
+// It's dereferrenced when passed into the `load()` method.
+#[get("/")]
+fn index(connection: DbConn) -> Template {
+    use schema::posts::dsl::*;
+    use schema::users::dsl::*;
+
+    let mut context = Context::new();
+   
+    // `load()` returns all the records from each table it is called on.
+    // the `posts::dsl::*` enables us to use `posts` instead of `posts::table`
+    // the types <Post> and <User> are imported by `lib_blog::models::*`
+    let post_list = posts.load::<Post>(&*connection).expect("Error loading posts");
+    let user_list = users.load::<User>(&*connection).expect("Error loading users");
+  
+    context.add("posts",&post_list);
+    context.add("users",&user_list);
+
+    Template::render("layout", &context)
+}
+```
+
+The above code won't compile *just yet*.
+Lets update the base layout page and see what errors we get afterwards.
+We're going to iterate over both post_list and user_list and output some data.
+To do this, we use some tera syntax to escape some looping code and get access
+to a local variable inside each loop.
+From there we can access each property of the struct... that was *serialized*.
+Mwuaahaha... ehh. Well, this is the error we're going to see.
+
+```rust
+<!-- inside `base.html.tera` -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body>
+        <div class="container">
+          <h1>MOAR POSTS AND USERS!</h1>
+          {% for user in users %}
+            <p>{{ user.first_name }} {{ user.last_name }} - {{ user.email }}</p>
+          {% endfor %}
+
+          {% for post in posts %}
+            <h2>{{ post.title }}</h2>
+            <p>{{ post.content }}</p>
+          {% endfor %}
+        </div>
+    </body>
+</html>
+```
+
+> cargo run --bin main
+
+```rust
+error[E0277]: the trait bound `lil_lib::models::Post: serde::ser::Serialize` is not satisfied
+  --> src/bin/main.rs:35:13
+   |
+35 |     context.add("posts", &post_list);
+   |             ^^^ the trait `serde::ser::Serialize` is not implemented for `lil_lib::models::Post`
+   |
+   = note: required because of the requirements on the impl of `serde::ser::Serialize` for `std::vec::Vec<lil_lib::models::Post>`
+
+error[E0277]: the trait bound `lil_lib::models::User: serde::ser::Serialize` is not satisfied
+  --> src/bin/main.rs:36:13
+   |
+36 |     context.add("users", &user_list);
+   |             ^^^ the trait `serde::ser::Serialize` is not implemented for `lil_lib::models::User`
+   |
+   = note: required because of the requirements on the impl of `serde::ser::Serialize` for `std::vec::Vec<lil_lib::models::User>`
+
+error: aborting due to 2 previous errors
+```
+
+Sorry! I knew this would happen!!!
+Each error is pointing to the fact that we need to `Serialize` our lists.
+When the response is sent over the wire, we can't transmit an actual rust Struct,
+but we can transmit some serialized data whether it's text, json, etc.
+We need to add the `serde_derive` library and *derive* `Serialize` for the User and Post structs.
+
+We already a few serde libs in our `Cargo.toml`,
+so we just need to import one for now and bring the important parts into scope.
+Please open up your lib.rs file.
+
+```rust
+// `src/lib.rs`
+
+// ... obfuscated code
+extern crate rocket;
+extern crate rocket_contrib;
+#[macro_use] extern crate serde_derive; // <- Add this anywhere on top
+
+pub mod schema;
+pub mod models;
+
+// ... obfuscated code
+
+```
+
+```rust
+// `src/models.rs`
+
+use schema::{posts, users};
+
+// Add that `Serialize` derive
+#[derive(Debug, Queryable, Serialize)]
+struct User {
+    id: i32,
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+// ... obfuscated code
+
+// And again here.
+#[derive(Debug, Queryable, Serialize)]
+struct Post {
+    id: i32,
+    user_id: i32,
+    title: String,
+    content: String,
+    published: bool,
+}
+
+// ... obfuscated code
+```
+
+Go for it!
+
+> cargo run --bin main
+
+*Drum Roll*...
+...
+...
+TADA! If all is well, you'll see a bunch of users output followed by a bunch of posts.
+Congrats if you made it this far.
+We've only started our amazing journey with using Rust on the web.
+The next section will feature all of the files with comments removed.
+
+## Our Folder Structure & Files w/o Comments
+
+```rust
+// Folder Structure
+
+|
+|_ /migrations
+|_ /src
+    |_ lib.rs
+    |_ models.rs
+    |_ schema.rs
+    |_ /bin
+       |_ main.rs
+       |_ seed.rs
+|_ /target
+|_ /templates
+
+```
+
+
+```rust
+// `src/lib.rs`
+
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+#[macro_use] extern crate diesel;
+#[macro_use] extern crate diesel_codegen;
+extern crate dotenv;
+extern crate r2d2;
+extern crate r2d2_diesel;
+extern crate rocket;
+extern crate rocket_contrib;
+#[macro use] serde_derive;
+
+pub mod schema;
+pub mod models;
+
+use dotenv::dotenv;
+use diesel::prelude::*;
+use r2d2::{Config, Pool, PooledConnection};
+use r2d2_diesel::ConnectionManager;
+use rocket::{Outcome, Request, State};
+use rocket::http::Status;
+use rocket::request::{self, FromRequest};
+use std::env;
+use std::ops::Deref;
+
+pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let config = Config::default();
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    Pool::new(config, manager).expect("Failed to create pool.")
+}
+
+pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
+
+impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<DbConn, ()> {
+        let pool = request.guard::<State<Pool<ConnectionManager<PgConnection>>>>()?;
+        match pool.get() {
+            Ok(conn) => Outcome::Success(DbConn(conn)),
+            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ())),
+        }
+    }
+}
+
+impl Deref for DbConn {
+    type Target = PgConnection;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+```
+
+```rust
+// Inside `src/bin/main.rs`
+
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
+extern crate lil_blog;
+extern crate diesel;
+extern crate rocket;
+extern crate rocket_contrib;
+extern crate tera;
+
+use diesel::prelude::*;
+use lil_blog::*;
+use lil_blog::models::*;
+use rocket_contrib::Template;
+use tera::Context;
+
+fn main() {
+    rocket::ignite()
+        .manage(create_db_pool())
+        .mount("/", routes![index])
+        .attach(Template::fairing())
+        .launch();
+}
+
+#[get("/")]
+fn index(connection: DbConn) -> Template {
+    use schema::posts::dsl::*;
+    use schema::users::dsl::*;
+
+    let mut context = Context::new();
+   
+    let post_list = posts.load::<Post>(&*connection).expect("Error loading posts");
+    let user_list = users.load::<User>(&*connection).expect("Error loading users");
+  
+    context.add("posts",&post_list);
+    context.add("users",&user_list);
+
+    Template::render("layout", &context)
+}
+```
+```rust
+// Inside `src/models.rs`
+
+use schema::{posts, users};
+
+#[derive(Debug, Queryable, Serialze)]
+struct User {
+    id: i32,
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Insertable)]
+#[table_name="users"]
+struct NewUser {
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String, 
+}
+
+#[derive(Debug, Queryable, Serialize)]
+struct Post {
+    id: i32,
+    user_id: i32,
+    title: String,
+    content: String,
+    published: bool,
+}
+
+#[derive(Debug, Insertable)]
+#[table_name="posts"]
+struct NewPost {
+    user_id: i32,
+    title: String,
+    content: String,
+}
+
+```
+
