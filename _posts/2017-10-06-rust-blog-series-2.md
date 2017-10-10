@@ -741,7 +741,7 @@ Mwuaahaha... ehh. Well, this is the error we're going to see.
           {% for post in posts %}
             <h2>{{ post.title }}</h2>
             <p>{{ post.content }}</p>
-          {% endfor %}{% endraw %}
+          {% endfor %} {% endraw %}
         </div>
     </body>
 </html>
