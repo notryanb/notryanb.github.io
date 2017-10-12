@@ -13,8 +13,13 @@ Welcome to Part II in our Rust blog hacking adventure.
 In this post, we'll be learning about connecting to the database
 and using some very simple Diesel APIs to seed that database.
 At the end of this post, we should have completed two fundamental tasks
-- Have a seeded database with users and posts,
-- Output each post title and author to our index page.
+1. Seed database (fill with initial dummy data) with users and posts,
+2. Output each post title and author to our index page.
+
+If you haven't checked out [Part I],
+please do as it covers project setup and will be referenced heavily throughout this guide.
+
+[Part I]: ./rust-blog-series-1.html
 
 ## infer_schema!
 
@@ -22,17 +27,18 @@ Our "entry point" for a Diesel applications.
 The Diesel [schema in depth guide] reviews all the options for database schema in greater details.
 All we need to know for the purpose of the guide is...
 
->infer_schema! is a macro provided by diesel_codegen when you have enabled the feature for one or more database backends.
-The macro will establish a database connection at compile time,
-query for a list of all the tables,
-and generate infer_table_from_schema! for each one.
-infer_schema will skip any table names which start with __.
+> infer_schema! is a macro provided by diesel_codegen when you have enabled the 
+> feature for one or more database backends.
+> The macro will establish a database connection at compile time,
+> query for a list of all the tables,
+> and generate infer_table_from_schema! for each one.
+> infer_schema will skip any table names which start with __.
 
 Using `infer_schema!` will give us some implicit benefits later in development,
 but it's also very easy to get started with,
 which is why we're using it here.
 
-To enable this feature, we must create the file `src/schema.rs'
+To enable this feature, we must create the file `src/schema.rs`
 
 ```rust
 // Inside `src/schema.rs`
@@ -127,11 +133,12 @@ The really interesting ones are `Queryable` and `Insertable`.
 `Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
 With `Insertable`, we don't generally include any auto-incrementing primary key columns because our database takes care of that for us.
 
-`Queryable` is also self explanatory.
-A `Queryable` struct is one that may be queried from the database with those fields / columns.
-Our `Queryable` structs share the same name as the table, so the table name is inferred,
-however our `Insertable` structs do not, so we must annotate them with the table they correspond to.
-Our current code is very basic and we'll just select all columns for now when querying.
+A `Queryable` struct represents data that is returned from a database query.
+Most examples you find will show a struct that directly correlates to a database table,
+however this doesn't mean that your `Queryable` structs *must* be coupled to map directly table.
+`Queryable` cares about the order of the fields returned and their types.
+This will become helpful when making query against several tables,
+which you will see example of as we get more in depth writing this web-app.
 
 Diesel supports nearly all database column types and maps them to Rust values.
 We're going to primarily be using `i32`, and `String`, but you'll see we will eventually use
@@ -143,9 +150,6 @@ One small thing to note is our `NewPost` struct is missing the `published` field
 This is because it has a default value of `FALSE`.
 Thinking ahead a little, we will want a feature of the app to publish posts after they are done.
 This is one way of keeping posts in a *draft* state.
-[This document] covers all the model derives in much more detail.
-
-[This document]: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/model-derives.md
 
 ## Database Connection
 
@@ -162,7 +166,6 @@ The [Diesel Getting Started] guide introduces us to database connections.
 extern crate dotenv;
 
 use diesel::prelude::*;
-use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
 
@@ -183,11 +186,10 @@ We need Diesel for our ORM/Query building and [dotenv] to pull out our database 
 from [Part I] of this series.
 
 [dotenv]: https://github.com/purpliminal/rust-dotenv
-[Part I]: 2017-09-15-rust-blog-series-1.md // FIXME BAD LINK
 
 The next four `use` statments bring some modules into scope from those libraries.
 `diesel::prelude::*;` imports a whole lot of wonderful parts of the diesel api,
-which allow us build sequel queries out of diesel methods.
+which allow us build SQL queries out of diesel methods.
 
 Turn your attention to the `establish_connection()` function.
 
@@ -196,8 +198,6 @@ pub fn establish_connection() -> PgConnection {
     dotenv().ok(); // Grab ENV vars from `.env`
 
     // Pull value from `DATABASE_URL` ENV var
-    // `expect()` is used because env::var returns a Result
-    // https://doc.rust-lang.org/std/env/fn.var.html
     let database_url = env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
@@ -210,8 +210,8 @@ pub fn establish_connection() -> PgConnection {
 ```
 
 `establish_connection` returns a [`PgConnection`], which will let us establish a connection to our Postgres database.
-If we were to use Sqlite or Mysql,
-then we would use the appropriate diesel imports for those backends and NOT use `pg::PgConnection`.
+If we were to use SQLite or MySQL,
+then we would use the appropriate diesel imports for those backends and NOT use `PgConnection`.
 
 Remember that `.env` file from Part I of the series?
 Well, this is the first important piece of code where we need it.
