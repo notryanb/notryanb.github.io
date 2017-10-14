@@ -137,20 +137,20 @@ With `Insertable`, we don't generally include any auto-incrementing primary key 
 
 A `Queryable` struct represents data that is being selected in database query.
 Most examples you find will show a struct that directly correlates to a database table,
-however this doesn't mean that your `Queryable` structs *must* be coupled to map directly table.
+however this doesn't mean that your `Queryable` structs *must* be coupled directly to table.
 `Queryable` cares about the order of the fields returned and their types.
-This will become helpful when making query against several tables,
-which you will see example of as we get more in depth writing this web-app.
+This will become helpful when making query against several tables.
 
 Diesel supports nearly all database column types and maps them to Rust values.
-We're going to primarily be using `i32`, and `String`, but you'll see we will eventually use
-`&str`, and datetime types from the `chrono` crate.
+We're going to primarily be using Rust types `i32`, and `String`,
+but we will eventually use
+`&str`, and datetime types from the `chrono` crate in another blog post.
 Diesel supports custom types, but this requires some impls on your part.
 We will not be covering advanced cases like that in this blog series.
 
 One small thing to note is our `NewPost` struct is missing the `published` field.
-This is because it has a default value of `FALSE`.
-Thinking ahead a little, we will want a feature of the app to publish posts after they are done.
+This is because it has a default value of `FALSE` (see [Part I]).
+Thinking ahead, we will want a feature of the app to publish posts after they are done.
 This is one way of keeping posts in a *draft* state.
 
 ## Database Connection
@@ -204,23 +204,23 @@ pub fn establish_connection() -> PgConnection {
         .expect("DATABASE_URL must be set");
 
     // Establishes a connection to the DB
-    // again, `expect()` is used because a ConnectionResult is returned.
     // https://docs.diesel.rs/diesel/connection/trait.Connection.html#tymethod.establish
     PgConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
 ```
 
-`establish_connection` returns a [`PgConnection`], which will let us establish a connection to our Postgres database.
+`establish_connection` returns a [`PgConnection`], which is the connection to our Postgres database.
 If we were to use SQLite or MySQL,
-then we would use the appropriate diesel imports for those backends and NOT use `PgConnection`.
+then our return type would be of a different connection type.
+All backend connection types are now imported with the `diesel::prelude`.
 
-Remember that `.env` file from Part I of the series?
+Remember that `.env` file from [Part I] of the series?
 Well, this is the first important piece of code where we need it.
 `dotenv().ok();` loads the environment variables from our `.env` file, which should be in the current directory
 or any of the parent directories. Documentation for `dotenv` can be found [here](https://github.com/purpliminal/rust-dotenv).
 
-The `database_url` grabs the database url string from the environment variables we just loaded and unwrapped via the `expect()` method.
+The `database_url` variable grabs the database url string from the environment variables we just loaded and unwrapped via the `expect()` method.
 We can then call the [`establish()`] method provided by `PgConnection` and pass in the `database_url`, which will grant us a connection to
 our Postgres database!
 
@@ -233,11 +233,12 @@ our Postgres database!
 
 The previous code works well in isolation, but also poses some scalability problems.
 I think I [remember reading somewhere] that establishing a database connection is expensive.
-Most ORMs use a [*prepared statement cache*] which stores the queries we write to avoid re-parsing and processing.
+Most ORMs use a [*prepared statement cache*] which stores our queries to avoid re-parsing and processing.
 Our database backend might be processing statements from multiple clients concurrently
 and can be slowed down if it unnecessarily repeats operations.
 In fact, database connections aren't the only type of connections that benefit from being reused.
-Most browsers reuse connections for HTTP requests because the cost of a TCP handshake can impact performance.
+Most browsers reuse connections for HTTP requests because even the cost of a TCP handshake can impact performance.
+
 For these reasons,
 we don't really want every single visitor to our blog opening up a new database connection everytime they hit a route.
 What we need is a [Connection Pool].
@@ -516,9 +517,9 @@ Our seed file needs to accomplish two things.
 - Generate a bunch of users
 - Generate a bunch of posts
 
-Sounds simple?! Actually, we'll see we need to make a few design decisions once we get into that file.
-All of those decisions will be addressed in the code comments,
-so you should be able to read the file top-to-bottom and follow logically.
+There are a few more gotchas we need to take into account while seeding the database.
+We need to generate random dummy data and also make sure our application isn't
+storing plain text passwords.
 
 
 ```rust
@@ -551,8 +552,8 @@ use lil_lib::*;
 use lil_lib::models;
 
 fn main() {
-    // Remember that `infer_schema!` macro from the first post?
-    // Here, we bring all the awesome Diesel generated APIs into scope
+    // `infer_schema!` is important here
+    // Here we bring all the availble Diesel DSL methods into scope
     // so we can interact with the database tables
     use schema::posts::dsl::*;
     use schema::users::dsl::*;
@@ -618,7 +619,7 @@ fn main() {
          .execute(&*connection)
          .expect("Error inserting users");
 
-     // Create 10 randomly generated users stored as a vec
+     // Create 10 randomly generated users stored in a vec
      let new_user_list: Vec<NewUser> = (0..10)
          .map( |_| generate_user_info(&hashed_password))
          .collect();
@@ -671,9 +672,7 @@ Woohoo! Wow, pretty impressive. We have one last step. Lets take a quick breathe
 - Update our dependencies
 - Seeded the database.
 
-The app is done, shipit! :P
-
-Lets direct out attention back to `src/bin/main.rs` and connect our state and log some posts / users.
+Lets direct out attention back to `src/bin/main.rs` , configure our managed state and log some posts / users.
 
 ```rust
 // Inside `src/bin/main.rs`
@@ -701,7 +700,6 @@ fn main() {
         .launch();
 }
 
-
 // Check out our DbConn Request Guard!
 // Our route now has access to a database connection.
 // It's dereferrenced when passed into the `load()` method.
@@ -728,10 +726,9 @@ fn index(connection: DbConn) -> Template {
 The above code won't compile *just yet*.
 Lets update the base layout page and see what errors we get afterwards.
 We're going to iterate over both post_list and user_list and output some data.
-To do this, we use some tera syntax to escape some looping code and get access
-to a local variable inside each loop.
-From there we can access each property of the struct... that was *serialized*.
-Mwuaahaha... ehh. Well, this is the error we're going to see.
+To do this, we use some tera iteration syntax and get access
+to a local variable inside each pass.
+From there we can access each property of the struct... as long as it was *serialized*.
 
 ```rust
 <!-- inside `base.html.tera` -->
@@ -787,7 +784,7 @@ error: aborting due to 2 previous errors
 Sorry! I knew this would happen!!!
 Each error is pointing to the fact that we need to `Serialize` our lists.
 The [`Context::add`] docs will show us that exact trait bound.
-When the response is sent over the wire, we can't transmit an actual rust Struct,
+When the response is sent over the wire, we can't transmit an actual Rust struct,
 but we can transmit some serialized data whether it's text, json, etc.
 We need to add the `serde_derive` library and *derive* `Serialize` for the User and Post structs.
 
@@ -1108,3 +1105,4 @@ infer_schema!("dotenv:DATABASE_URL");
 - [Diesel Statement Cache Interal Docs](https://github.com/diesel-rs/diesel/blob/d30821a6625a574b77ab9aaaeedf7283676d3946/diesel/src/connection/statement_cache.rs#L1-L91)
 - [Rocket Request Guards](https://rocket.rs/guide/requests/#request-guards)
 - [About Connection Pools](https://en.wikipedia.org/wiki/Connection_pool)
+- [Dotenv docs](https://docs.rs/dotenv/0.10.1/dotenv/)
