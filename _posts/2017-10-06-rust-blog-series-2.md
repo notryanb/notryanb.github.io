@@ -64,7 +64,7 @@ This may seem odd at first, but it should feel more natural by the time we get t
 
 At the moment, we really only care about two database operations; Create and Read.
 This really just amounts to a SQL INSERT and SELECT statments.
-Diesel gives us some nice apis to load a whole row without SELECT,
+Diesel gives us some nice APIs to load a whole row without SELECT,
 so we'll be using those.
 
 We have two database tables, users and posts, and we need to perform two operations on each.
@@ -327,7 +327,7 @@ extern crate rocket;
 extern crate rocket_contrib;
 
 // These two mod declarations re-export those files / modules.
-// schema contains the `infer_schema!` macro to help generate table apis.
+// schema contains the `infer_schema!` macro to help generate table APIs.
 // models are be our database models we setup in `src/models.rs`
 // We re-export so any file that includes this `lib.rs`, may have access
 // to these as well.
@@ -550,7 +550,7 @@ use lil_lib::models;
 
 fn main() {
     // Remember that `infer_schema!` macro from the first post?
-    // Here, we bring all the awesome Diesel generated apis into scope
+    // Here, we bring all the awesome Diesel generated APIs into scope
     // so we can interact with the database tables
     use schema::posts::dsl::*;
     use schema::users::dsl::*;
