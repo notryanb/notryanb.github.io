@@ -34,7 +34,7 @@ All we need to know for the purpose of the guide is...
 > and generate infer_table_from_schema! for each one.
 > infer_schema will skip any table names which start with __.
 
-Using `infer_schema!` will give us some implicit benefits later in development,
+Using `infer_schema!` will give us some implicit benefits for joining tables later in development,
 but it's also very easy to get started with,
 which is why we're using it here.
 
