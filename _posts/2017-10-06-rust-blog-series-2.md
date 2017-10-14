@@ -55,15 +55,17 @@ so we may access our schema from anywhere in our app.
 ## Database Models
 
 Now that we have a schema, Rust can interact with database tables,
-however that is a little different than interacting with a database model.
+however that is a little different than interacting with a database model
+(referring to the [MVC] pattern I'm used to in Ruby on Rails).
 Diesel is a bit different than other ORMS, in that its main focus is on query building.
-Coming from Ruby on Rails (or similar all-in-one frameworks),
 I expected to work with a single object as my database model,
-however in Diesel you should feel comfortable defining specialize structs to support your queries.
+however in Diesel you should feel comfortable defining specialized structs to support your queries.
 This may seem odd at first, but it should feel more natural by the time we get to designing all CRUD endpoints.
 
+[MVC]: https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#Components
+
 At the moment, we really only care about two database operations; Create and Read.
-This really just amounts to a SQL INSERT and SELECT statments.
+This amounts to a SQL INSERT and SELECT statements.
 Diesel gives us some nice APIs to load a whole row without SELECT,
 so we'll be using those.
 
@@ -187,7 +189,7 @@ from [Part I] of this series.
 
 [dotenv]: https://github.com/purpliminal/rust-dotenv
 
-The next four `use` statments bring some modules into scope from those libraries.
+The next four `use` statements bring some modules into scope from those libraries.
 `diesel::prelude::*;` imports a whole lot of wonderful parts of the diesel api,
 which allow us build SQL queries out of diesel methods.
 
@@ -1103,3 +1105,6 @@ infer_schema!("dotenv:DATABASE_URL");
 ```
 
 ## <a name="references"></a>References
+- [Diesel Statement Cache Interal Docs](https://github.com/diesel-rs/diesel/blob/d30821a6625a574b77ab9aaaeedf7283676d3946/diesel/src/connection/statement_cache.rs#L1-L91)
+- [Rocket Request Guards](https://rocket.rs/guide/requests/#request-guards)
+- [About Connection Pools](https://en.wikipedia.org/wiki/Connection_pool)
