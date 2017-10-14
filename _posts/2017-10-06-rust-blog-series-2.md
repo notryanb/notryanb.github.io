@@ -231,7 +231,7 @@ our Postgres database!
 
 The previous code works well in isolation, but also poses some scalability problems.
 I think I [remember reading somewhere] that establishing a database connection is expensive.
-Most ORMs use a [*prepared statement cache*] which caches the queries we write to avoid re-parsing and processing.
+Most ORMs use a [*prepared statement cache*] which stores the queries we write to avoid re-parsing and processing.
 Our database backend might be processing statements from multiple clients concurrently
 and can be slowed down if it unnecessarily repeats operations.
 In fact, database connections aren't the only type of connections that benefit from being reused.
@@ -244,7 +244,7 @@ and can be reused to help enhance the performance of executing commands on our d
 When a connection is needed, it is plucked from the pool, used,
 and then returned back to be available for another connection.
 
-[*prepared statment cache*]: http://www.theserverside.com/news/1365244/Why-Prepared-Statements-are-important-and-how-to-use-them-properly
+[*prepared statement cache*]: http://www.theserverside.com/news/1365244/Why-Prepared-Statements-are-important-and-how-to-use-them-properly
 [remember reading somewhere]: https://stackoverflow.com/questions/34303678/database-connection-expensive-to-create
 [Connection Pool]: https://en.wikipedia.org/wiki/Connection_pool
 
