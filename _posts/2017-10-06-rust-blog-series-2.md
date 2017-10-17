@@ -850,13 +850,18 @@ TADA! If all is well, you'll see a bunch of users output followed by a bunch of 
 Congrats if you made it this far.
 We've only started our amazing journey with using Rust on the web.
 
+## Conclusion
+
 In Part III we will explore more of Rocket, setting up endpoints for
-creating, reading, updating, destroying our posts, 
+creating, reading, updating, destroying our posts,
+adding a "lil style" via css,
 and associating tables / joining in Diesel.
 
 The following section will feature all of the files with comments removed
-and some references to help reinforce some of the concepts we've covered.
+and a list of references to help reinforce some of the concepts we've covered.
 If you have found any errors with the information presented,
+found any aspects confusing,
+or would like to add some important missing pieces of information,
 feel free to open a [pull request](https://github.com/notryanb/notryanb.github.io)
 or create an issue in my [repo](https://github.com/notryanb/notryanb.github.io)
 
