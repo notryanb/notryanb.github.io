@@ -135,7 +135,7 @@ The really interesting ones are `Queryable` and `Insertable`.
 `Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
 With `Insertable`, we don't generally include any auto-incrementing primary key columns because our database takes care of that for us.
 
-A `Queryable` struct represents data that is being selected in database query.
+A `Queryable` struct represents data that is returned in database query.
 Most examples you find will show a struct that directly correlates to a database table,
 however this doesn't mean that your `Queryable` structs *must* be coupled directly to table.
 `Queryable` cares about the order of the fields returned and their types.
