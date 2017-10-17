@@ -23,7 +23,7 @@ please do as it covers project setup and will be referenced heavily throughout t
 
 ## infer_schema!
 
-Our "entry point" for a Diesel applications.
+Our "entry point" for Diesel applications.
 The Diesel [schema in depth guide] reviews all the options for database schema in greater details.
 All we need to know for the purpose of the guide is...
 
@@ -46,8 +46,8 @@ To enable this feature, we must create the file `src/schema.rs`
 infer_schema!("dotenv:DATABASE_URL");
 ```
 
-This file will be brought into scope in our `src/lib.rs` file  via a `use` statement
-so we may access our schema from anywhere in our app.
+This file will be brought into scope in our `src/lib.rs` file  via a `use` statement.
+Doing so will enable access to our schema from anywhere in our app.
 
 [schema in depth guide]: https://github.com/diesel-rs/diesel/blob/master/guide_drafts/schema-in-depth.md
 
@@ -56,7 +56,7 @@ so we may access our schema from anywhere in our app.
 
 Now that we have a schema, Rust can interact with database tables,
 however that is a little different than interacting with a database model
-(referring to the [MVC] pattern I'm used to in Ruby on Rails).
+(referring to the "M" of the [MVC] pattern I'm used to in Ruby on Rails).
 Diesel is a bit different than other ORMS, in that its main focus is on query building.
 I expected to work with a single object as my database model,
 however in Diesel you should feel comfortable defining specialized structs to support your queries.
@@ -65,9 +65,7 @@ This may seem odd at first, but it should feel more natural by the time we get t
 [MVC]: https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#Components
 
 At the moment, we really only care about two database operations; Create and Read.
-This amounts to a SQL INSERT and SELECT statements.
-Diesel gives us some nice APIs to load a whole row without SELECT,
-so we'll be using those.
+This amounts to SQL INSERT and SELECT statements.
 
 We have two database tables, users and posts, and we need to perform two operations on each.
 The data structs for our models *may* look like this.
@@ -82,6 +80,7 @@ Lets create a `src/models.rs` file and review the code that goes into it.
 ```rust
 // Inside `src/models.rs`
 
+// This `models` file will also be imported into our `lib`
 // We JUST made the schema file...
 // Lets take advantage of it by bringing it into scope here
 use schema::{posts, users};
@@ -126,14 +125,17 @@ struct NewPost {
 If you're thinking *"whoa, whoa, whoa... WUT are those weird DERIVE things?!?!"*,
 don't worry, they're your friend!
 
-The `diesel_codegen` crate... well, generates code for us!
-Rust is strongly typed and has a wonderful trait system which Diesel takes advantage of.
-This gives us compile-time guarantees about all aspects of our models.
+The `diesel_codegen` crate takes all of those `#[derive()]`'s
+and writes boilerplate code so we may focus on the business logic of our application.
 
 `Debug` should look somewhat familiar, as it's basically standard with the Rust langauge.
-The really interesting ones are `Queryable` and `Insertable`.
+If you're unfamiliar, please check out the official [Derive] docs.
+
+The really interesting derives are `Queryable` and `Insertable`.
 `Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
 With `Insertable`, we don't generally include any auto-incrementing primary key columns because our database takes care of that for us.
+
+[Derive]: https://rustbyexample.com/trait/derive.html
 
 A `Queryable` struct represents data that is returned in database query.
 Most examples you find will show a struct that directly correlates to a database table,
