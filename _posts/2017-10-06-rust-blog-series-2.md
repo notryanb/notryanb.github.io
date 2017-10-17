@@ -849,7 +849,16 @@ Go for it!
 TADA! If all is well, you'll see a bunch of users output followed by a bunch of posts.
 Congrats if you made it this far.
 We've only started our amazing journey with using Rust on the web.
-The next section will feature all of the files with comments removed.
+
+In Part III we will explore more of Rocket, setting up endpoints for
+creating, reading, updating, destroying our posts, 
+and associating tables / joining in Diesel.
+
+The following section will feature all of the files with comments removed
+and some references to help reinforce some of the concepts we've covered.
+If you have found any errors with the information presented,
+feel free to open a [pull request](https://github.com/notryanb/notryanb.github.io)
+or create an issue in my [repo](https://github.com/notryanb/notryanb.github.io)
 
 ## Our Folder Structure & Files w/o Comments
 
