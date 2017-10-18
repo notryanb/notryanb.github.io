@@ -302,11 +302,13 @@ Any type that implements the `FromRequest` trait is a request guard.
 Rocket automatically invokes the implementation of each request guard 
 before it is passed to the route handler.
 Rocket will only dispatch requests to the handler when all request guards are validated.
-It is important to note that we won't be implementing this trait directly on our database connection.
-Our database connection must be "validated" in each route that needs a connection (a route that modifies the database).
+It is important to note that we won't be implementing this trait directly on our database connection pool.
+Our database connection must be "validated" (in this case, successfully retrieved) 
+in each route that needs a connection (a route that modifies the database).
 This behavior shouldn't be on the connection pool itself,
 rather we wrap our connection pool in a tuple struct that implements the Request Guard behavior.
-That wrapper will be able to determine if a connection is available to use.
+That wrapper will be able to determine if a connection is available to use
+and then try to pull it from the connection pool.
 
 In order for us to implement `FromRequest`,
 we must define the [`from_request()`] required method.
@@ -470,7 +472,7 @@ impl Deref for DbConn {
 ```
 
 Run either `cargo run` or `cargo build` at this point to compile the app.
-You should still see the same output from the previous blog post if you're running it,
+You should still see the same output from [Part I] if you `cargo run`,
 as we haven't changed anything from the perspective of a visiting user.
 The last objective which ties everything together will be seeding the database
 and outputting that seed data to the user.
