@@ -128,23 +128,39 @@ don't worry, they're your friend!
 The `diesel_codegen` crate takes all of those `#[derive()]`'s
 and writes boilerplate code so we may focus on the business logic of our application.
 
-`Debug` should look somewhat familiar, as it's basically standard with the Rust langauge.
+`Debug` should look somewhat familiar.
+It enables you to print/format values that otherwise don't have a way to be printed.
 If you're unfamiliar, please check out the official [Derive] docs.
 
 The really interesting derives are `Queryable` and `Insertable`.
 `Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
+
+`Insertable` structs should be designed to closely mirror the data being passed around by web forms or API endpoints.
+Diesel currently (v0.16) offers `insert(values).into(table)`
+as the pattern to generate `INSERT` SQL statements.
+This will be deprecated by v1.0(currently in master) in favor of `insert_into(table).values(some_values)`
+to mirror the raw SQL you would be writing anyway.
+Just by looking at those function signatures,
+you can probably see that `Insertable` structs *must* correspond to a single table.
+This is also evident from our model file `table_name` annotations.
 With `Insertable`, we don't generally include any auto-incrementing primary key columns because our database takes care of that for us.
+
+*Diesel master branch only* - for simple inserts that don't involve deserializng a form / large data structure,
+you may use a simple tuple.
+This won't be covered in any examples because we're working with 0.16,
+but feel free to point to Diesel's master branch 
+or use Diesel v1.0 when it's released in late November 2017 to make use of this feature.
 
 [Derive]: https://rustbyexample.com/trait/derive.html
 
-A `Queryable` struct represents data that is returned in database query.
-Most examples you find will show a struct that directly correlates to a database table,
-however this doesn't mean that your `Queryable` structs *must* be coupled directly to table.
-`Queryable` cares about the order of the fields returned and their types.
-This will become helpful when making query against several tables.
+A `Queryable` struct represents data that is returned from a database query.
+Most examples you will find show a struct that directly correlates to a database table,
+however this doesn't mean that your `Queryable` structs *must* be coupled directly to a single table.
+You may have a `Queryable` struct that represents the result of a complex query over several tables.
+`Queryable` only cares about the order of the fields returned and their types.
 
 Diesel supports nearly all database column types and maps them to Rust values.
-We're going to primarily be using Rust types `i32`, and `String`,
+In our current models file, we are primarily using Rust types `i32`, and `String`,
 but we will eventually use
 `&str`, and datetime types from the `chrono` crate in another blog post.
 Diesel supports custom types, but this requires some impls on your part.
@@ -154,6 +170,10 @@ One small thing to note is our `NewPost` struct is missing the `published` field
 This is because it has a default value of `FALSE` (see [Part I]).
 Thinking ahead, we will want a feature of the app to publish posts after they are done.
 This is one way of keeping posts in a *draft* state.
+
+There are several more derives available in Diesel.
+They are not entirely important for the goals we defined earlier,
+however we will be making extensive use of them in Part III of this series.
 
 ## Database Connection
 
