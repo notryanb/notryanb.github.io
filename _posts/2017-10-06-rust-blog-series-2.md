@@ -11,9 +11,9 @@ categories:
 
 Welcome to Part II in our Rust blog hacking adventure.
 In this post, we'll be learning about connecting to the database
-and using some very simple Diesel APIs to seed that database.
+and using some very simple Diesel APIs to seed (add initial dummy data) that database.
 At the end of this post, we should have completed two fundamental tasks
-1. Seed database (fill with initial dummy data) with users and posts,
+1. Seed the database with users and posts,
 2. Output each post title and author to our index page.
 
 If you haven't checked out [Part I],
@@ -35,8 +35,7 @@ All we need to know for the purpose of the guide is...
 > infer_schema will skip any table names which start with __.
 
 Using `infer_schema!` will give us some implicit benefits for joining tables later in development,
-but it's also very easy to get started with,
-which is why we're using it here.
+but it's also easy to get started with which is why we're using it here.
 
 To enable this feature, we must create the file `src/schema.rs`
 
@@ -125,14 +124,14 @@ struct NewPost {
 If you're thinking *"whoa, whoa, whoa... WUT are those weird DERIVE things?!?!"*,
 don't worry, they're your friend!
 
-The `diesel_codegen` crate takes all of those `#[derive()]`'s
-and writes boilerplate code so we may focus on the business logic of our application.
+The `diesel_codegen` crate takes some of those `#[derive()]`'s
+and generates boilerplate code so we may focus on the business logic of our application.
 
-`Debug` should look somewhat familiar.
+`Debug` should look somewhat familiar because it is provided by the Rust language and not Diesel.
 It enables you to print/format values that otherwise don't have a way to be printed.
-If you're unfamiliar, please check out the official [Derive] docs.
+If you're unfamiliar with `Debug`, please check out the official [Derive] docs.
 
-The really interesting derives are `Queryable` and `Insertable`.
+The really interesting derives are `Insertable` and `Queryable`.
 `Insertable` is Diesel's way of saying that *the values of this struct map to the columns of a table and can be inserted in a row*
 
 `Insertable` structs should be designed to closely mirror the data being passed around by web forms or API endpoints.
@@ -238,7 +237,9 @@ then our return type would be of a different connection type.
 All backend connection types are now imported with the `diesel::prelude`.
 
 Remember that `.env` file from [Part I] of the series?
-Well, this is the first important piece of code where we need it.
+Besides `diesel setup`,
+it is also useful when making database connections inside our application.
+
 `dotenv().ok();` loads the environment variables from our `.env` file, which should be in the current directory
 or any of the parent directories. Documentation for `dotenv` can be found [here](https://github.com/purpliminal/rust-dotenv).
 
@@ -294,26 +295,34 @@ I should cover [Rocket Request Guards] and [Managed State] before we get started
 because they're fundamental to any Rocket application - even at this stage.
 Request guards are *similar* to middleware, in that they intercept requests.
 A request guard is mainly used for request validation and can force redirection based on their outcome.
-The validation policy can be built in, like we see from standard rocket request objects,
-or we can implement our own custom validation policies like we will for passing the connection pool.
+The validation policy can be built in, like we see from standard rocket request objects (ie. web forms),
+or we can implement our own custom validation policies like we will for accessing the connection pool.
 
 Any type that implements the `FromRequest` trait is a request guard.
+Rocket automatically invokes the implementation of each request guard 
+before it is passed to the route handler.
+Rocket will only dispatch requests to the handler when all request guards are validated.
 It is important to note that we won't be implementing this trait directly on our database connection.
-Our database connection is *state* that will passed around,
-however we can wrap it in a type that we want to use as a request guard.
-It is this container that we will use as the type to validate.
+Our database connection must be "validated" in each route that needs a connection (a route that modifies the database).
+This behavior shouldn't be on the connection pool itself,
+rather we wrap our connection pool in a tuple struct that implements the Request Guard behavior.
+That wrapper will be able to determine if a connection is available to use.
 
 In order for us to implement `FromRequest`,
 we must define the [`from_request()`] required method.
-Request guards will become more interesting later in this blod series when we ensure user authentication
-via the type system! =)
+`from_request()` is the method that is invoked to perform validation.
+Each request can carry some type of "global" state around that is managed by your Rocket application.
+This is a feature of Rocket called `Managed State`
 
-Managed State is a vague term, but it's also literally... managed state.
-This means that Rocket will keep track of the state of a type for the duration of our application.
-When our app boots, the State will be managed as long as our app is running.
-We can access this application state from within our request guards via the `request::guard::<State<T>>()` method.
-Without even writing this code yet, we know each request guard will take in a Request object, with a guard property,
-that manages some State<T>.
+Managed State is registered when we are setting up our Rocket app by
+invoking the `manage()` method on our Rocket instance.
+Rocket can only keep track of one state per given type.
+That is to say, Rocket can only manage one `DbConn`
+(the tuple struct we are wrapping our connection pool with).
+We can access this application state from within our request guards 
+via the `request::guard::<State<T>>()` method.
+Without even writing this code yet, we know each Request Guard will take in a Request object, with a guard property, that manages some State<T>.
+
 
 Before you jump down to the next section, which will be quite a bit of code, let's have a look at the [Rocket
 Managed State and Connection Guard] documentation to see if this can help us out. 
