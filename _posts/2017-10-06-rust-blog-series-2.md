@@ -474,8 +474,7 @@ impl Deref for DbConn {
 Run either `cargo run` or `cargo build` at this point to compile the app.
 You should still see the same output from [Part I] if you `cargo run`,
 as we haven't changed anything from the perspective of a visiting user.
-The last objective which ties everything together will be seeding the database
-and outputting that seed data to the user.
+Time to tackle the first objective we defined in this article, seeding the database.
 
 ## Seeding the Database
 
