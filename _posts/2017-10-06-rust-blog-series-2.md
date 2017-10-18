@@ -298,7 +298,7 @@ A request guard is mainly used for request validation and can force redirection 
 The validation policy can be built in, like we see from standard rocket request objects (ie. web forms),
 or we can implement our own custom validation policies like we will for accessing the connection pool.
 
-Any type that implements the `FromRequest` trait is a request guard.
+Any type that implements the `FromRequest` trait is a Request Guard.
 Rocket automatically invokes the implementation of each request guard 
 before it is passed to the route handler.
 Rocket will only dispatch requests to the handler when all request guards are validated.
@@ -313,8 +313,11 @@ and then try to pull it from the connection pool.
 In order for us to implement `FromRequest`,
 we must define the [`from_request()`] required method.
 `from_request()` is the method that is invoked to perform validation.
-Each request can carry some type of "global" state around that is managed by your Rocket application.
-This is a feature of Rocket called `Managed State`
+It is in this method definition that we will try to grab a connection from the connection pool.
+Each Rocket request object can carry some type of "global" state 
+around that is managed by your Rocket application.
+The state that we want to pass around is our connection pool.
+To do this, we can take advantage of a Rocket feature called `Managed State`.
 
 Managed State is registered when we are setting up our Rocket app by
 invoking the `manage()` method on our Rocket instance.
