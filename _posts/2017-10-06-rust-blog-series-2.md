@@ -891,7 +891,7 @@ In Part III we will explore more of Rocket, setting up endpoints for
 creating, reading, updating, deleting our posts,
 adding a "lil style" via css,
 and associating tables / joining in Diesel.
-Special thanks to the Diesel core team & friends for helping review this post.
+Special thanks to the Diesel core team & friends for helping review this article.
 
 The following section will feature all of the files with comments removed
 and a list of references to help reinforce some of the concepts we've covered.
