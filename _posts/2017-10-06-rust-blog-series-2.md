@@ -888,7 +888,7 @@ We've only started our amazing journey with using Rust on the web.
 ## Conclusion
 
 In Part III we will explore more of Rocket, setting up endpoints for
-creating, reading, updating, destroying our posts,
+creating, reading, updating, deleting our posts,
 adding a "lil style" via css,
 and associating tables / joining in Diesel.
 Special thanks to the Diesel core team & friends for helping review this post.
