@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Making a simple blog with Rust: Part II"
-date:   2017-10-06
+date:   2017-10-19
 categories:
 - rust
 - programming
@@ -20,6 +20,8 @@ If you haven't checked out [Part I],
 please do as it covers project setup and will be referenced heavily throughout this guide.
 
 [Part I]: ./rust-blog-series-1.html
+
+*Edit* - Fixed some broken links and corrected published date
 
 ## infer_schema!
 
@@ -335,7 +337,7 @@ I won't replicate that code here, because it can get long and we're going to bui
 
 [Rocket Request Guards]: https://rocket.rs/guide/requests/#request-guards
 [Managed State]: https://rocket.rs/guide/state/
-[`from_request()`]: /from_requestFIXME
+[`from_request()`]: https://api.rocket.rs/rocket/request/trait.FromRequest.html#tymethod.from_request
 Without further ado, check out our code!
 
 [Rocket Managed State and Connection Guard]: https://rocket.rs/guide/state/#managed-pool
