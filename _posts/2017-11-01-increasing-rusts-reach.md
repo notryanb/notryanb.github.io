@@ -90,8 +90,11 @@ and be an active member of the Diesel team.
 I have also decided to get involved in Rust game / audio development and start working
 on the [Piston] project.
 Game development is the whole reason I became a programmer in the first place
-(I've been wanting to do this for 20+ years, but was told otherwise by academia :/ ).
-I look forward to helping keep the Rust community a welcoming and enriching place to program.
+(I've been wanting to do this for 20+ years,
+but was told otherwise by traditional academia :/ ).
+
+I think I can finally call myself a *Rustacean* 
+and look forward to helping keep the Rust community a welcoming and enriching place to program.
 
 Special thanks to Sean Griffin, Katrina Brock, Pascal Hertleif, and Bastien Orivel.
 I promise to stop *breaking* CI.
