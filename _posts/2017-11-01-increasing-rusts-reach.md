@@ -76,7 +76,7 @@ and actual code (better errors with `compile_error!`).
 
 Katrina and I also accepted membership to the official Diesel Contributors team.
 
-## Relfection
+## Reflection
 
 Working with the Diesel team has been a wonderful experience.
 They were there for all my ridiculous questions and gave excellent and honest feedback
