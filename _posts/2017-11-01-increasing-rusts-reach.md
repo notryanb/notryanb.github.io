@@ -10,8 +10,8 @@ categories:
 
 It's coming up on the last week of the [Increasing Rust's Reach] program,
 which ended up being one of the best projects to help further my programming skills.
-This program was intended to bring under-represented people into large Rust projects
-to help make the Rust community a better place to learn and a great language to work with.
+This program intended to bring under-represented people into large Rust projects
+to help make the Rust a more accessible language and foster a welcoming community.
 I felt I somewhat fit the criteria as I got started programming late (first software developer job at the age of 30),
 had come from a non-technical background (BS Psychology) and *really* wanted to get better at Rust.
 
