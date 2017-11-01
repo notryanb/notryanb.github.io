@@ -11,7 +11,7 @@ categories:
 It's coming up on the last week of the [Increasing Rust's Reach] program,
 which ended up being one of the best projects to help further my programming skills.
 This program intended to bring under-represented people into large Rust projects
-to help make the Rust a more accessible language and foster a welcoming community.
+to help make Rust a more accessible language and foster a welcoming community.
 I felt I somewhat fit the criteria as I got started programming late (first software developer job at the age of 30),
 had come from a non-technical background (BS Psychology) and *really* wanted to get better at Rust.
 
@@ -19,7 +19,8 @@ had come from a non-technical background (BS Psychology) and *really* wanted to 
 
 I first heard about Rust when I was at a Ruby conference a little over a year ago (Ancient City Ruby 2016).
 That is where my soon to be "mentor" Sean Griffin and Rust evangelist Steve Klabnik were speaking.
-I was amazed by what Rust had to offer, speed & safety!
+I was amazed by what Rust had to offer. 
+Speed & safety!
 The first few attemps at making anything more complex than a simple CLI script 
 were very frustrating and I again felt like an incompetant programmer.
 
@@ -28,8 +29,9 @@ so I kept at it, albeit infrequently.
 Come RailsConf 2016/2017 - I see Yehuda & Godfrey from Tilde giving talks about Helix,
 which aims at giving Rubyists an easy way to augment their *slow* Ruby code without using C,
 but by using safe & fast Rust!
-I started trying to make small projects to show off to co-workers this past summer,
-and as luck would have it,
+I started trying to make small Rust projects to show off to co-workers this past summer,
+which kept me in the loop of all the progress happening in the Rust community.
+As luck would have it,
 I stumbled across the Increasing Rust's Reach program,
 which would enable me to work directly with an experienced Rust developers and thought-leaders
 in the Rust community.
@@ -59,6 +61,8 @@ User auth, password security, database constraints to name a few...
 
 With the help of the Diesel Core team,
 I got pretty far in implementing [my blog] with most of the features I wanted.
+It's still a WIP and has lots of bad code,
+but a great playground to experiment with new ideas.
 This blog itself (sorry, it's Jekyll for now... heh),
 features articles on what I've learned in setting up and creating the Rust Blog project.
 There will be more to come :)!
@@ -93,16 +97,6 @@ Special thanks to Sean Griffin, Katrina Brock, Pascal Hertleif, and Bastien Oriv
 I promise to stop *breaking* CI.
 
 [Piston]: https://github.com/PistonDevelopers/piston
-
-
-
-
-
-
-
-
-
 [Increasing Rust's Reach]: https://blog.rust-lang.org/2017/06/27/Increasing-Rusts-Reach.html
 [Diesel]: http://diesel.rs
 [Rocket]: https://rocket.rs
-
