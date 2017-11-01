@@ -9,7 +9,7 @@ categories:
 ---
 
 It's coming up on the last week of the [Increasing Rust's Reach] program,
-which ended up being one of the best decisions to help further my programming skills.
+which ended up being one of the best projects to help further my programming skills.
 This program was intended to bring under-represented people into large Rust projects
 to help make the Rust community a better place to learn and a great language to work with.
 I felt I somewhat fit the criteria as I got started programming late (first software developer job at the age of 30),
@@ -22,6 +22,7 @@ That is where my soon to be "mentor" Sean Griffin and Rust evangelist Steve Klab
 I was amazed by what Rust had to offer, speed & safety!
 The first few attemps at making anything more complex than a simple CLI script 
 were very frustrating and I again felt like an incompetant programmer.
+
 Many of the Rubyists I respected seemed to be jumping into this language,
 so I kept at it, albeit infrequently.
 Come RailsConf 2016/2017 - I see Yehuda & Godfrey from Tilde giving talks about Helix,
@@ -42,7 +43,7 @@ tutorials, and code for both the [Diesel] ORM and [Rocket] web frameworks.
 My Rust partner was Sean Griffin, 
 whom I was very excited to work with as I was already familiar with his work in the Ruby community.
 
-Nervous and *very* excited, I started blasting out cards in my trello board for this project.
+Nervous and *very* excited, I started blasting out cards on my trello board for this project.
 This was everything from ideas for projects, tons of questions, and my goals.
 I decided the best thing to do was work on a very basic application that I could code with my eyes closed in Ruby,
 a web blog.
@@ -52,7 +53,7 @@ but I barely knew the Rust language and there is nothing like Rails in the Rust 
 so this was going to be a challenge.
 One of the biggest hurdles besides getting comfortable with the language was figuring out the 
 stuff I take for granted in a Ruby on Rails app.
-User Auth, password security, database constraints to name a few...
+User auth, password security, database constraints to name a few...
 
 ## Accomplishments
 
@@ -65,7 +66,7 @@ There will be more to come :)!
 [my blog]: https://github.com/notryanb/rust-blog-demo
 
 Aside from that personal project,
-I made my first open source pull request with some guide documentation on Diesel's codegen.
+I made my **first open source pull request** with some guide documentation on Diesel's codegen.
 Since then I have made a handful of contributions related to both documentation (including doctests)
 and actual code (better errors with `compile_error!`). 
 
@@ -85,7 +86,7 @@ and be an active member of the Diesel team.
 I have also decided to get involved in Rust game / audio development and start working
 on the [Piston] project.
 Game development is the whole reason I became a programmer in the first place
-(I've been wanting to do this for 20+ years... :/ ).
+(I've been wanting to do this for 20+ years, but was told otherwise by academia :/ ).
 I look forward to helping keep the Rust community a welcoming and enriching place to program.
 
 Special thanks to Sean Griffin, Katrina Brock, Pascal Hertleif, and Bastien Orivel.
