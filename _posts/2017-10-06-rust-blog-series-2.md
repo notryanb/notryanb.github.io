@@ -22,6 +22,7 @@ please do as it covers project setup and will be referenced heavily throughout t
 [Part I]: ./rust-blog-series-1.html
 
 *Edit* - Fixed some broken links and corrected published date
+*Edit 2* - Fixed models.rs, added bcrypt import and seed command
 
 ## infer_schema!
 
@@ -87,41 +88,43 @@ Lets create a `src/models.rs` file and review the code that goes into it.
 use schema::{posts, users};
 
 #[derive(Debug, Queryable)]
-struct User {
-    id: i32,
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
+pub struct User {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String, 
 }
 
 #[derive(Debug, Insertable)]
 #[table_name="users"]
-struct NewUser {
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
+pub struct NewUser {
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String, 
 }
 
 #[derive(Debug, Queryable)]
-struct Post {
-    id: i32,
-    user_id: i32,
-    title: String,
-    content: String,
-    published: bool,
+pub struct Post {
+    pub id: i32,
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
+    pub published: bool,
 }
 
 #[derive(Debug, Insertable)]
 #[table_name="posts"]
-struct NewPost {
-    user_id: i32,
-    title: String,
-    content: String,
+pub struct NewPost {
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
 }
 
 ```
+
+Notice that each struct and field has 'pub' in front of it? The 'pub' keyword allows us to import these structs and fields into other parts of our application. 
 
 If you're thinking *"whoa, whoa, whoa... WUT are those weird DERIVE things?!?!"*,
 don't worry, they're your friend!
@@ -548,6 +551,9 @@ fake = "*"
 # SYS
 dotenv = "0.10"
 
+# Hashing
+bcrypt = "*"
+
 ```
 
 Our seed file needs to accomplish two things.
@@ -683,7 +689,9 @@ fn main() {
 
 ```
 
-If you'd like the visual feedback, add some `println!()` macros after the INSERTS or queries for confirmation from the seed file.
+Run `cargo run --bin seed` on the command line to execute the code we just added and populate the database with dummy data.
+
+If you'd like visual feedback, add some `println!()` macros after the INSERTS or queries for confirmation from the seed file.
 We'll be confirming directly from Postgres.
 Get into your database via the Postgres CLI with the following command.
 Make sure to use the database name that is in your DATABASE_URL.
