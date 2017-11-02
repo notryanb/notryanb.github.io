@@ -21,7 +21,7 @@ please do as it covers project setup and will be referenced heavily throughout t
 
 [Part I]: ./rust-blog-series-1.html
 
-*Edit* - Fixed some broken links and corrected published date
+*Edit* - Fixed some broken links and corrected published date  
 *Edit 2* - Fixed models.rs, added bcrypt import and seed command
 
 ## infer_schema!
@@ -124,7 +124,7 @@ pub struct NewPost {
 
 ```
 
-Notice that each struct and field has 'pub' in front of it? The 'pub' keyword allows us to import these structs and fields into other parts of our application. 
+Notice that each struct and field has `pub` in front of it? The `pub` keyword allows us to import these structs and fields into other parts of our application. 
 
 If you're thinking *"whoa, whoa, whoa... WUT are those weird DERIVE things?!?!"*,
 don't worry, they're your friend!
@@ -861,24 +861,24 @@ use schema::{posts, users};
 
 // Add that `Serialize` derive
 #[derive(Debug, Queryable, Serialize)]
-struct User {
-    id: i32,
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
+pub struct User {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String, 
 }
 
 // ... obfuscated code
 
 // And again here.
 #[derive(Debug, Queryable, Serialize)]
-struct Post {
-    id: i32,
-    user_id: i32,
-    title: String,
-    content: String,
-    published: bool,
+pub struct Post {
+    pub id: i32,
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
+    pub published: bool,
 }
 
 // ... obfuscated code
@@ -1040,38 +1040,38 @@ fn index(connection: DbConn) -> Template {
 use schema::{posts, users};
 
 #[derive(Debug, Queryable, Serialize)]
-struct User {
-    id: i32,
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
+pub struct User {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String, 
 }
 
 #[derive(Debug, Insertable)]
 #[table_name="users"]
-struct NewUser {
-    first_name: String,
-    last_name: String,
-    email: String,
-    password: String, 
+pub struct NewUser {
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String, 
 }
 
 #[derive(Debug, Queryable, Serialize)]
-struct Post {
-    id: i32,
-    user_id: i32,
-    title: String,
-    content: String,
-    published: bool,
+pub struct Post {
+    pub id: i32,
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
+    pub published: bool,
 }
 
 #[derive(Debug, Insertable)]
 #[table_name="posts"]
-struct NewPost {
-    user_id: i32,
-    title: String,
-    content: String,
+pub struct NewPost {
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
 }
 
 ```
