@@ -618,8 +618,8 @@ fn main() {
     // I like to clear out the database before each time I run the seed file. 
     // Posts goes first here because we will eventually be making use
     // of foreign key constraints. The reverse order will throw errors in the DB.
-    diesel::delete(posts).execute(&*connection).expect("Error deleteing posts");
-    diesel::delete(users).execute(&*connection).expect("Error deleteing users");
+    diesel::delete(posts).execute(&*connection).expect("Error deleting posts");
+    diesel::delete(users).execute(&*connection).expect("Error deleting users");
 
      // Randomly generate user info.
      // Pass in the hashed password.
