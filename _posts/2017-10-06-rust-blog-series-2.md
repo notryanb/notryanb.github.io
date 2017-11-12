@@ -592,7 +592,7 @@ extern crate diesel;
 use bcrypt::{DEFAULT_COST, hash};
 use diesel::prelude::*;
 use lil_lib::*;
-use lil_lib::models;
+use lil_lib::models::*;
 
 fn main() {
     // `infer_schema!` is important here
@@ -1087,7 +1087,7 @@ extern crate diesel;
 use bcrypt::{DEFAULT_COST, hash};
 use diesel::prelude::*;
 use lil_lib::*;
-use lil_lib::models;
+use lil_lib::models::*;
 
 fn main() {
     use schema::posts::dsl::*;
