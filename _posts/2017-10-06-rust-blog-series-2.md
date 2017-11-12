@@ -886,7 +886,7 @@ pub struct Post {
 
 Go for it!
 
-> cargo run --bin main
+> `cargo run --bin main`
 
 *Drum Roll*...
 ...
