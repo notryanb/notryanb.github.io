@@ -725,15 +725,15 @@ Lets direct out attention back to `src/bin/main.rs` , configure our managed stat
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
-extern crate lil_blog;
+extern crate lil_lib;
 extern crate diesel;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate tera;
 
 use diesel::prelude::*;
-use lil_blog::*;
-use lil_blog::models::*;
+use lil_lib::*;
+use lil_lib::models::*;
 use rocket_contrib::Template;
 use tera::Context;
 
@@ -998,15 +998,15 @@ impl Deref for DbConn {
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
-extern crate lil_blog;
+extern crate lil_lib;
 extern crate diesel;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate tera;
 
 use diesel::prelude::*;
-use lil_blog::*;
-use lil_blog::models::*;
+use lil_lib::*;
+use lil_lib::models::*;
 use rocket_contrib::Template;
 use tera::Context;
 
