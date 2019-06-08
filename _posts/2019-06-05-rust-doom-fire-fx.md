@@ -333,9 +333,9 @@ You can add it after all the color palette and pixel buffer code.
 ```
 
 Our loop will take care of several things.
-We will be clearning the screen on every iteration,
+We will be clearing the screen on every iteration,
 checking if the user has pressed escape to quit the program,
-calculate the fire, write it to the fire texture, and preset it back to the screen.
+calculate the fire, write it to the fire texture, and present it back to the screen.
 
 ```rust
 
@@ -400,8 +400,10 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
 
 Compile this as release, `cargo run --release` to see infinite flames!
 
-While this is awesome and got me very excited the first time I saw it,
-we should aim to complete the effect by having the fire eventually die down and display an image
+The first time I ran this was complete joy and I hope it was as fun for you, too.
+
+Lets not stop there. 
+We should aim to complete the effect by having the fire eventually die down and display an image
 rising in the background.
 The reason we care about the alpha channel in our texture buffer is we want "cold" pixels to be transparent
 so our logo can be seen through them.
@@ -424,19 +426,18 @@ This means the white row at the bottom will eventually go away and stop feeding 
 It took me a while to figure out how to get the image to display behind the fire even with the alpha set correctly,
 so we'll add in one line of code to set the blend mode of the fire texture.
 
-First, lets add the image loading code for Ferris anywhere before the loop.
+First, lets add the image loading code for Ferris anywhere after canvas creation, but before the loop.
 
 ```rust
     // ... SDL2 initialization code
+
     let mut y_scrolling = 540;
     let image_texture_creator = canvas.texture_creator();
 
     // Ferris Logo:
-    // http://enosart.com/animated-crab-9974/
     let logo = image_texture_creator
         .load_texture("./src/ferris_logo.png")
         .unwrap();
-
 
     // ... fire texture code
 ```
@@ -444,7 +445,7 @@ First, lets add the image loading code for Ferris anywhere before the loop.
 Lastly, the code to put our fire out inside the loop, but after writing the texture.
 
 ```rust
-    // ... fire texture loop
+    // ... inside of the loop, but after writing to the fire texture
 
     // This is so we can see Ferris through the fire.
     &fire_texture.set_blend_mode(BlendMode::Blend);
@@ -474,8 +475,8 @@ Lastly, the code to put our fire out inside the loop, but after writing the text
 
     let rect = Rect::new(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // We need to add another rectangle to place Ferris' buffer.
-    // The scrolling value will effect Ferris' placement every loop iteration.
+    // We need to add another rectangle for placing Ferris' buffer into.
+    // The updating y_scrolling value will effect Ferris' placement every loop iteration.
     let logo_rect = Rect::new(40, y_scrolling, CANVAS_WIDTH - 75, 450);
 
     // Make sure to draw Ferri behind (before) the fire!
