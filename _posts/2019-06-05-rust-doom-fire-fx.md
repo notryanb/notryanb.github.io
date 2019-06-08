@@ -338,20 +338,30 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
         fire_texture
             .with_lock(None, |buffer: &mut [u8], _pitch: usize| {
                 calculate_fire(&mut pixel_buffer);
-                let pixel_vec = convert_to_pixel(&pixel_buffer, &color_palette);
 
-                for (idx, pixel) in pixel_vec.iter().enumerate() {
+                for (idx, pixel_cursor) in pixel_buffer.iter().enumerate() {
                     let offset = idx * 4;
-                    buffer[offset] = pixel.alpha as u8;
-                    buffer[offset + 1] = pixel.blue as u8;
-                    buffer[offset + 2] = pixel.green as u8;
-                    buffer[offset + 3] = pixel.red as u8;
+    
+                    let pixel = color_palette[*pixel_cursor as usize];
+ 
+                    // Ensure the pixels are completely opaque when brighter 
+                    // than our darkest color in the palette 
+                    // Helpful when our eventual image will rise
+                    // from behind the fire
+                    let mut alpha = 255;
+
+                    // Translucent pixels when darker than darkest color
+                    if pixel.0 <= 0x07 && pixel.1 <= 0x07 && pixel.2 <= 0x07 {
+                        alpha = 0;
+                    }
+   
+                    buffer[offset] = alpha as u8;
+                    buffer[offset + 1] = pixel.2 as u8;
+                    buffer[offset + 2] = pixel.1 as u8;
+                    buffer[offset + 3] = pixel.0 as u8;
                 }
             })
             .unwrap();
-
-        // Comment this out to see the difference :)
-        &fire_texture.set_blend_mode(BlendMode::Blend);
 
         // Display it all to the user
         let rect = Rect::new(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -362,6 +372,7 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
 
 ```
 
+Compile this as release, `cargo run --release` to see infinite flames!
 
 
 
