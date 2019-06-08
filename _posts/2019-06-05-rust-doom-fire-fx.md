@@ -273,6 +273,8 @@ I found that if I wanted to write our pixel buffer to the screen,
 we need a texture to manipulate as well.
 SDL gives us the ability to bind behavior to keyboard events which are nice for exiting our project.
 We should take care of the setup process before starting the loop.
+All loop and setup code should be in the `main()` function.
+You can add it after all the color palette and pixel buffer code.
 
 ```rust
     // Set Up SDL Windox & Canvas
@@ -337,9 +339,12 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
         // Write the state of the pixel buffer into the fire texture.
         fire_texture
             .with_lock(None, |buffer: &mut [u8], _pitch: usize| {
+                // all the work we did before...
                 calculate_fire(&mut pixel_buffer);
 
                 for (idx, pixel_cursor) in pixel_buffer.iter().enumerate() {
+                    // Each pixel is 4 bytes, so we need to offset the texture
+                    // buffer by this much.
                     let offset = idx * 4;
     
                     let pixel = color_palette[*pixel_cursor as usize];
@@ -350,15 +355,17 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
                     // from behind the fire
                     let mut alpha = 255;
 
-                    // Translucent pixels when darker than darkest color
+                    // Make transparent pixels when darker than darkest color
                     if pixel.0 <= 0x07 && pixel.1 <= 0x07 && pixel.2 <= 0x07 {
                         alpha = 0;
                     }
-   
-                    buffer[offset] = alpha as u8;
-                    buffer[offset + 1] = pixel.2 as u8;
-                    buffer[offset + 2] = pixel.1 as u8;
-                    buffer[offset + 3] = pixel.0 as u8;
+  
+                    // Each offset + N is another offset into 
+                    // each byte that represents that color 
+                    buffer[offset] = alpha as u8; // alpha channel
+                    buffer[offset + 1] = pixel.2 as u8; // blue channel
+                    buffer[offset + 2] = pixel.1 as u8; // green channel
+                    buffer[offset + 3] = pixel.0 as u8; // red channel
                 }
             })
             .unwrap();
@@ -374,6 +381,94 @@ calculate the fire, write it to the fire texture, and preset it back to the scre
 
 Compile this as release, `cargo run --release` to see infinite flames!
 
+While this is awesome and got me very excited the first time I saw it,
+we should aim to complete the effect by having the fire eventually die down and display an image
+rising in the background.
+The reason we care about the alpha channel in our texture buffer is we want "cold" pixels to be transparent
+so our logo can be seen through them.
+Doom obviously uses the doom logo (which I have in my repo) version, but I'd like to keep things Rust-y
+and use [Ferris].
+Download a `.png` from the rustacean.net site and place it in your `/src` folder right along `main.rs`.
 
+In order to create the rising Ferris, we need to keep track of how the image will scroll updwards.
+We can start with `let mut y_scrolling = 540;` just above our initial `sdl_context` initialization.
+This will start the image 540 pixels down in the image behind the fire.
+Inside our loop we can apply an algorithm to the pixel buffer to start decreasing the fire based on how much
+Ferris has scrolled up in the background.
+
+We will decrease scrolling by 2 until it has reached 70 pixels from the top of the screen.
+Once Ferris arrives to 70 pixels from the top,
+we can apply a "reverse" calculation to the fire to cool it off and eventually dissipate it.
+This means the white row at the bottom will eventually go away and stop feeding the fire.
+
+It took me a while to figure out how to get the image to display behind the fire even with the alpha set correctly,
+so we'll add in one line of code to set the blend mode of the fire texture.
+
+First, lets add the image loading code for Ferris anywhere before the loop.
+
+```rust
+    // ... SDL2 initialization code
+
+    let image_texture_creator = canvas.texture_creator();
+
+    // Ferris Logo:
+    // http://enosart.com/animated-crab-9974/
+    let logo = image_texture_creator
+        .load_texture("./src/ferris_logo.png")
+        .unwrap();
+
+
+    // ... fire texture code
+```
+
+Lastly, the code to put our fire out inside the loop, but after writing the texture.
+
+```rust
+    // ... fire texture loop
+
+    // This is so we can see Ferris through the fire.
+    &fire_texture.set_blend_mode(BlendMode::Blend);
+
+    // Set the position for anything scrolling to stop at 70 pixels
+    // from the top of the canvas
+    if y_scrolling != 70 {
+        y_scrolling -= 2;
+    } else {
+        // Start at the bottom white row of the FIRE and loop backwards.
+        // We can stop a few rows above to get an extinguishing effect
+        // Where the fire blows away
+        for y in (161..168).rev() {
+            for x in 0..FIRE_WIDTH {
+                let index = (y * FIRE_WIDTH + x) as usize;
+
+                // If the color isn't black, generate a new color slightly darker
+                if pixel_buffer[index] > 0 {
+                    let mut rng = rand::thread_rng();
+                    let random_num: f64 = rng.gen(); // generates a float between 0 and 1
+                    let random_decrement = random_num.round() as u32 & 3;
+                    pixel_buffer[index] -= random_decrement;
+                }
+            }
+        }
+    }
+
+    let rect = Rect::new(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    // We need to add another rectangle to place Ferris' buffer.
+    // The scrolling value will effect Ferris' placement every loop iteration.
+    let logo_rect = Rect::new(40, y_scrolling, CANVAS_WIDTH - 75, 450);
+
+    // Make sure to draw Ferri behind (before) the fire!
+    canvas.copy(&logo, None, Some(logo_rect)).unwrap();
+    canvas.copy(&fire_texture, None, Some(rect)).unwrap();
+    canvas.present();
+
+```
+
+The moment of truth, run `cargo run --release`
+
+We've done it! The Doom PSX fire effect using Rust and SDL2! 
+
+![doom_ferris_fx](/assets/doom_ferris_fx.gif)
 
 
