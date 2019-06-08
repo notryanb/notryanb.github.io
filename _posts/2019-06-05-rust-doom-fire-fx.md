@@ -226,7 +226,9 @@ You can find [rand here](https://crates.io/crates/rand).
 ```rust
 extern crate rand;
 
-// ... main() and other code...
+use rand::Rng;
+
+// ... main() {} 
 
 pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
     let pixel = pixel_buffer[cursor as usize];
@@ -254,8 +256,22 @@ pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
 We're basically done with the fire algorithm.
 The rest of this article will deal with passing these computed colors to SDL2 so we can see the work we've done.
 Add the following code at the top of main to import everything we'll need for using SDL2.
+We'll also need to include SDL2 to our `Cargo.toml`
 
 ```rust
+// Cargo.toml
+
+[dependencies]
+rand = "0.6.3"
+
+[dependencies.sdl2]
+version = "0.32.1"
+default-features = false
+features = ["image"]
+
+
+
+// ----------  /src/main.rs
 extern crate sdl2;
 
 use rand::Rng;
@@ -391,8 +407,9 @@ and use [Ferris].
 Download a `.png` from the rustacean.net site and place it in your `/src` folder right along `main.rs`.
 
 In order to create the rising Ferris, we need to keep track of how the image will scroll updwards.
-We can start with `let mut y_scrolling = 540;` just above our initial `sdl_context` initialization.
-This will start the image 540 pixels down in the image behind the fire.
+Just after the fire texture, we can add a variable `y_scrolling` and set it to 540px down from the top of the image.
+We will adjust the value of `y_scrolling` every iteration through the loop in order to bring Ferris up.
+This can also be used to trigger when we want the fire to extinguish.
 Inside our loop we can apply an algorithm to the pixel buffer to start decreasing the fire based on how much
 Ferris has scrolled up in the background.
 
@@ -408,7 +425,7 @@ First, lets add the image loading code for Ferris anywhere before the loop.
 
 ```rust
     // ... SDL2 initialization code
-
+    let mut y_scrolling = 540;
     let image_texture_creator = canvas.texture_creator();
 
     // Ferris Logo:
