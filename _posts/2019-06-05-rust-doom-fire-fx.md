@@ -22,13 +22,13 @@ port of the JavaScript implementation.
 This post will cover creating the Doom fire effect using
 - Stable Rust (1.35.0 as of time of writing)
 - [SDL2 crate]
-- Preferrably macOS or linux
+- Preferrably macOS or linux (I wasn't able to get SDL2 configured on Windows properly)
 - [Ferris], the Rust mascot
 
-The code from my personal implementation is [located here](https://github.com/notryanb/doom_fire_fx)
+The code from my personal implementation is [located here](https://github.com/notryanb/doom_fire_fx) if want to skip the article.
 
-I will not go into details about installing the SDL2 library as this can be wildly different across machines.
-The SDL2 crate documentation does a fairly decent job of doing so.
+I will not go into details about installing the SDL2 library as this process is different across machines and can be the hardest part of the project.
+The SDL2 crate documentation does a fairly decent job of guiding the setup process.
 I built this project on my 2013 MacBook Pro.
 I am no authority on graphics programming (or even Rust for that matter!),
 so please do not take this approach as a best practice.
@@ -41,10 +41,9 @@ It is meant to be used as a learning exercise and aimed towards new Rustaceans.
 [Ferris]: https://rustacean.net/
 
 
-To start off, we are trying to [implement this](https://youtu.be/YJB0gfP-GRY?t=13) by manipulating an array of pixels.
-The general idea is to iterate over the collection of pixels and choose the correct color from a palette.
+To start off, we are trying to [implement this](https://youtu.be/YJB0gfP-GRY?t=13) by manipulating a collection of pixels and selecting the correct color from a palette.
 The palette we're going to use is 36 colors in length ranging from *almost* black (colder) to white (hotter) with some red, orange, and yellow in the middle.
-We're going to put almost all of the code in the main section to get things working, as we can always refactor later.
+We're going to put almost all of the code in the main function to get things working, as we can always refactor later.
 Perhaps I'll eventually follow up this post on how to refactor this implementation in a more *rusty* way.
 
 ```rust
@@ -100,22 +99,23 @@ Fire width and height represent how tall our fire is going to be, not how tall t
 Our canvas (SDL Window) will be 800x600 pixels.
 You may notice that the fire doesn't seem wide or high enough to cover most of our window.
 We will actually end up scaling the pixels to "become larger", which does a few cool things.
-- Makes the effect appear a little more pixelated, which mimic the PSX version pretty well.
+- Makes the effect appear a little more pixelated, which mimics the PSX version pretty well.
 - Less indicies to iterate over every frame
+
 The `color_palette` is an array of tuples with three members representing Red, Green, Blue hex values.
 You can take those tuples (without the `0x` prefix) and plug them into any hex-to-rgb converter to see the colors they produce.
 
 Our starting state should be an entirely black screen with the bottom row of pixels set to white.
 The bottom line will be where the fire originates from.
 In order to do this, we need a collection of pixels, or rather a *buffer* that represents all the pixels in our fire.
-We can achieve this by creating a `Vec` with the [capacity] set to our fire width * fire height.
+We can achieve this by creating a `Vec` with the [capacity] set to our `fire width * fire height`.
 This vec will be updated on every frame, so it must be mutable.
 When creating the Vec, it will be empty despite us setting the capacity.
-We have to push all the black pixels into our buffer and then update it again the the white line we want at the bottom.
+We have to push all the black pixels into our buffer and then update it again with the white line we want at the bottom.
 
 Not being used to graphics programming, the array indexing confused me when originally porting the code to Rust.
-Our pixel buffer is 1-dimensional and layed out by row starting from the top of the image.
-Each indice will contain a number 0 through 36, which is a reference into a spot in our color palette.
+Our pixel buffer is 1-dimensional and layed out by row starting from the top left of the image.
+Each indice will contain a number 0 through 36, which refers to a spot in our color palette tuple array.
 The coordinate `x: 0, y: 0`is the top left corner of the screen.
 As `x` increases, we're moving right and as `y` increases, we're moving towards the bottom of the screen.
 
@@ -162,9 +162,9 @@ fn main() {
 Lets build the fire algorithm before actually writing any SDL code.
 In my repo, I've arbitrarily put the SDL2 code first, which can all be changed during a refactoring.
 Our algorithm needs to do two things.
-- Iterate through every pixel
+- Check every "pixel" in the buffer.
 - Decide how to spread the fire (what color it should be)
-Below the nested loop to go through each x,y coordinate using the dimensions of our fire.
+
 When indexing into the `pixel_buffer`, think about how the structure is laid out.
 The width of our fire is `320`, which means the first indicies 0..319 represent a single horizontal row at the top of the image.
 The next 320 indices represent then next row down.
