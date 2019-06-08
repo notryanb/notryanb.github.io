@@ -169,7 +169,7 @@ When indexing into the `pixel_buffer`, think about how the structure is laid out
 The width of our fire is `320`, which means the first indicies 0..319 represent a single horizontal row at the top of the image.
 The next 320 indices represent then next row down.
 Iterating down the screen and then over to the right (by column) will be easier for our spread fire algorithm.
-To do this we must use the formula `y * FIRE_WIDTH + x` when `x` is in our outer loop.
+To do this we must use the formula `y * FIRE_WIDTH + x`.
 
 
 ```rust
@@ -210,13 +210,13 @@ Our `spread_fire` function will need the cursor we calculated for moving across 
 The fire algorithm is simple, but very clever (at least I think so, but I didn't create it...).
 We need to check the "color" of the pixel, which again is a number that represents the index in the `color_palette` array.
 If that color is black, we don't do anything.
-This is because that pixel represents something cold and shouldn't effect anything above it.
+This is because that pixel represents something cold and shouldn't effect anything around it.
 When the pixel is a color besides the darkest color in our `color_palette`, > 0 ,
 then we must somehow choose the next color.
 
 When our image starts out, only the bottom row is white, which means that row is hot and everything else is cold.
-We need to tell the row just above the white one to heat up as well as take pixels to the left or right into account as well if are trying to simulate a fire.
-To do this we'll randomly select a pixel close to the one we're looking at and give it a random slightly cooler color than the source pixel.
+Every iteration the "hot" pixels need to effect other closeby pixels by heating them up as well.
+To do this we'll randomly select a pixel close to the one we're looking at and give it a random similar color than the source pixel.
 This guarantees that the rows above the white one will start to turn red/orange/yellow.
 As long as that white row is there, it will feed the fire.
 Be sure to add `rand` to your `Cargo.toml` file.
@@ -241,12 +241,12 @@ pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
         let mut rng = rand::thread_rng(); 
         let random_index = (rng.gen::<f64>() * 3.0).round() as u32 & 3; 
 
-        // This will make our fire look like it's blowing int he wind. 
-        // Feel free to play with the distance numbers, but be aware about going out of bounds of the buffer
+        // Adjusting the distance will change how the fire behaves
+        // by making it look like it is blowing left or right.
         let distance = cursor - random_index + 1;
         let new_index = (distance - FIRE_WIDTH) as usize;
 
-        // Select a similar, but cooler color for the random pixel
+        // Select a similar color for the random close pixel
         pixel_buffer[new_index] = pixel - (random_index & 1); 
     }
 }
@@ -283,13 +283,17 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 ```
 
-For SDL2 to work, we need to create a context, window, and canvas.
+For SDL2 to work, we need to create a [context, window], and [canvas].
 I found that if I wanted to write our pixel buffer to the screen,
-we need a texture to manipulate as well.
+we need a [texture] to manipulate as well.
 SDL gives us the ability to bind behavior to keyboard events which are nice for exiting our project.
 We should take care of the setup process before starting the loop.
 All loop and setup code should be in the `main()` function.
 You can add it after all the color palette and pixel buffer code.
+
+[context, window]: https://docs.rs/sdl2/0.32.2/sdl2/video/struct.Window.html#method.context
+[canvas]: https://docs.rs/sdl2/0.32.2/sdl2/render/struct.Canvas.html
+[texture]: https://docs.rs/sdl2/0.32.2/sdl2/render/struct.TextureCreator.html
 
 ```rust
     // Set Up SDL Windox & Canvas
