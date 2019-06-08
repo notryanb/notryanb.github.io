@@ -109,32 +109,35 @@ You can take those tuples (without the `0x` prefix) and plug them into any hex-t
 Our starting state should be an entirely black screen with the bottom row of pixels set to white.
 The bottom line will be where the fire originates from.
 In order to do this, we need a collection of pixels, or rather a *buffer* that represents all the pixels in our fire.
-We can achieve this by creating a `Vec` with the capacity set to our fire width * fire height.
+We can achieve this by creating a `Vec` with the [capacity] set to our fire width * fire height.
 This vec will be updated on every frame, so it must be mutable.
 When creating the Vec, it will be empty despite us setting the capacity.
 We have to push all the black pixels into our buffer and then update it again the the white line we want at the bottom.
 
-Not being used to graphics programming, the array indexing through me for a loop when originally porting the code to Rust.
-Our pixel buffer is 1-dimensional layed out by row starting from the top of the image.
+Not being used to graphics programming, the array indexing confused me when originally porting the code to Rust.
+Our pixel buffer is 1-dimensional and layed out by row starting from the top of the image.
+Each indice will contain a number 0 through 36, which is a reference into a spot in our color palette.
 The coordinate `x: 0, y: 0`is the top left corner of the screen.
 As `x` increases, we're moving right and as `y` increases, we're moving towards the bottom of the screen.
 
+[capacity]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.with_capacity
+
 ```rust
 /*
-  Example of a 3x3 Grid. 
+  Example of how a 3x3 grid works.
   The first 3 positions pixel_buffer[0], pixel_buffer[1], pixel_buffer[2] are the top row
-  and the last 3 positions (indicies 6, 7, 8) are the bottom row set to white (36)
+  and the last 3 positions (indicies 6, 7, 8) are the bottom row set to white (index 36 in color_palette)
 
   [
-      0  { x: 0, y: 0 },
-      0  { x: 1, y: 0 },
-      0  { x: 2, y: 0 },
-      0  { x: 0, y: 1 },
-      0  { x: 1, y: 1 },
-      0  { x: 2, y: 1 },
-      36 { x: 0, y: 2 },
-      36 { x: 1, y: 2 },
-      36 { x: 2, y: 2 }, 
+      0,  // { x: 0, y: 0 }
+      0,  // { x: 1, y: 0 }
+      0,  // { x: 2, y: 0 }
+      0,  // { x: 0, y: 1 }
+      0,  // { x: 1, y: 1 }
+      0,  // { x: 2, y: 1 }
+      36, // { x: 0, y: 2 }
+      36, // { x: 1, y: 2 }
+      36, // { x: 2, y: 2 }
   ]
 */
 
@@ -157,6 +160,207 @@ fn main() {
     }
 ```
 
+Lets build the fire algorithm before actually writing any SDL code.
+In my repo, I've arbitrarily put the SDL2 code first, which can all be changed during a refactoring.
+Our algorithm needs to do two things.
+- Iterate through every pixel
+- Decide how to spread the fire (what color it should be)
+Below the nested loop to go through each x,y coordinate using the dimensions of our fire.
+When indexing into the `pixel_buffer`, think about how the structure is laid out.
+The width of our fire is `320`, which means the first indicies 0..319 represent a single horizontal row at the top of the image.
+The next 320 indices represent then next row down.
+Iterating down the screen and then over to the right (by column) will be easier for our spread fire algorithm.
+To do this we must use the formula `y * FIRE_WIDTH + x` when `x` is in our outer loop.
+
+
+```rust
+/*
+    Fire pixel buffer will look like this for a 3x3 grid.
+
+    The buffer is ordered by row then column. 
+    ie. every FIRE_WIDTH index represents one ROW, starting at the top of the image.
+    The last row represents the bottom of the image, AKA the entire white row.
+
+    This function iterates down and across the window.
+    ie. starts at the top of the first column, works it's way down,
+    then moves into the next column to the right.
+    
+    [
+        0  { x: 0, y: 0 }, never touched, this is the top of the fire where it doesn't go
+        0  { x: 1, y: 0 }, never touched, this is the top of the fire where it doesn't go
+        0  { x: 2, y: 0 }, never touched, this is the top of the fire where it doesn't go
+        0  { x: 0, y: 1 }, <- 1. cursor first iteration
+        0  { x: 1, y: 1 }, <- 3. cursor third iteration
+        0  { x: 2, y: 1 }, <- 3. cursor fifth iteration
+        36 { x: 0, y: 2 }, <- 2. cursor second iteration
+        36 { x: 1, y: 2 }, <- 4. cursor fourth iteration
+        36 { x: 2, y: 2 }, <- 6. cursor sixth iteration
+    ]
+*/
+pub fn calculate_fire(pixel_buffer: &mut Vec<u32>) {
+    for x in 0..FIRE_WIDTH {
+        for y in 1..FIRE_HEIGHT {
+            let fire_pixel_cursor = y * FIRE_WIDTH + x;
+            spread_fire(fire_pixel_cursor, pixel_buffer);
+        }
+    }
+}
+```
+
+Our `spread_fire` function will need the cursor we calculated for moving across the `pixel_buffer` and the buffer itself.
+The fire algorithm is simple, but very clever (at least I think so, but I didn't create it...).
+We need to check the "color" of the pixel, which again is a number that represents the index in the `color_palette` array.
+If that color is black, we don't do anything.
+This is because that pixel represents something cold and shouldn't effect anything above it.
+When the pixel is a color besides the darkest color in our `color_palette`, > 0 ,
+then we must somehow choose the next color.
+
+When our image starts out, only the bottom row is white, which means that row is hot and everything else is cold.
+We need to tell the row just above the white one to heat up as well as take pixels to the left or right into account as well if are trying to simulate a fire.
+To do this we'll randomly select a pixel close to the one we're looking at and give it a random slightly cooler color than the source pixel.
+This guarantees that the rows above the white one will start to turn red/orange/yellow.
+As long as that white row is there, it will feed the fire.
+Be sure to add `rand` to your `Cargo.toml` file.
+You can find [rand here](https://crates.io/crates/rand).
+
+```rust
+extern crate rand;
+
+// ... main() and other code...
+
+pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
+    let pixel = pixel_buffer[cursor as usize];
+
+    if pixel == 0 {
+        // our cursor selected a black pixel, which means it's too cold to effect anything.
+        let idx = (cursor - FIRE_WIDTH) as usize;
+        pixel_buffer[idx] = 0;
+    } else {
+        // ensure the index will be 0,1,2
+        let mut rng = rand::thread_rng(); 
+        let random_index = (rng.gen::<f64>() * 3.0).round() as u32 & 3; 
+
+        // This will make our fire look like it's blowing int he wind. 
+        // Feel free to play with the distance numbers, but be aware about going out of bounds of the buffer
+        let distance = cursor - random_index + 1;
+        let new_index = (distance - FIRE_WIDTH) as usize;
+
+        // Select a similar, but cooler color for the random pixel
+        pixel_buffer[new_index] = pixel - (random_index & 1); 
+    }
+}
+```
+
+We're basically done with the fire algorithm.
+The rest of this article will deal with passing these computed colors to SDL2 so we can see the work we've done.
+Add the following code at the top of main to import everything we'll need for using SDL2.
+
+```rust
+extern crate sdl2;
+
+use rand::Rng;
+use sdl2::image::LoadTexture;
+use sdl2::pixels::Color;
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::rect::Rect;
+use sdl2::render::{BlendMode, TextureCreator};
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+```
+
+For SDL2 to work, we need to create a context, window, and canvas.
+I found that if I wanted to write our pixel buffer to the screen,
+we need a texture to manipulate as well.
+SDL gives us the ability to bind behavior to keyboard events which are nice for exiting our project.
+We should take care of the setup process before starting the loop.
+
+```rust
+    // Set Up SDL Windox & Canvas
+    let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
+
+    let window = video_subsystem
+        .window("Rust Doom Fire FX", CANVAS_WIDTH, CANVAS_HEIGHT)
+        .position_centered()
+        .build()
+        .unwrap();
+
+    let mut canvas = window
+        .into_canvas()
+        .target_texture()
+        .present_vsync()
+        .build()
+        .unwrap();
+
+    let texture_creator: TextureCreator<_> = canvas.texture_creator();
+
+    // RGBA8888 splits each pixel into four 8 bit sections taking a total of 4 bytes
+    // This is how we'll set Red, Green Blue and Alpha.
+    let mut fire_texture = texture_creator
+        .create_texture_streaming(PixelFormatEnum::RGBA8888, FIRE_WIDTH, FIRE_HEIGHT)
+        .map_err(|e| e.to_string())
+        .unwrap();
+
+    // Start with a blank slate and then present it for viewing.
+    canvas.clear();
+    canvas.set_draw_color(Color::RGBA(0x07, 0x07, 0x07, 255));
+    canvas.present();
+
+    // This gives us access to keyboard events
+    let mut event_pump = sdl_context.event_pump().unwrap();
+
+```
+
+Our loop will take care of several things.
+We will be clearning the screen on every iteration,
+checking if the user has pressed escape to quit the program,
+calculate the fire, write it to the fire texture, and preset it back to the screen.
+
+```rust
+
+    'running: loop {
+        // Wipe the screen clean
+        canvas.clear();
+
+        // Simple check if the user has pressed escape, which will quit the program.
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'running,
+                _ => {}
+            }
+        }
+
+        // Write the state of the pixel buffer into the fire texture.
+        fire_texture
+            .with_lock(None, |buffer: &mut [u8], _pitch: usize| {
+                calculate_fire(&mut pixel_buffer);
+                let pixel_vec = convert_to_pixel(&pixel_buffer, &color_palette);
+
+                for (idx, pixel) in pixel_vec.iter().enumerate() {
+                    let offset = idx * 4;
+                    buffer[offset] = pixel.alpha as u8;
+                    buffer[offset + 1] = pixel.blue as u8;
+                    buffer[offset + 2] = pixel.green as u8;
+                    buffer[offset + 3] = pixel.red as u8;
+                }
+            })
+            .unwrap();
+
+        // Comment this out to see the difference :)
+        &fire_texture.set_blend_mode(BlendMode::Blend);
+
+        // Display it all to the user
+        let rect = Rect::new(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        canvas.copy(&fire_texture, None, Some(rect)).unwrap();
+        canvas.present();
+    }
+
+```
 
 
 
