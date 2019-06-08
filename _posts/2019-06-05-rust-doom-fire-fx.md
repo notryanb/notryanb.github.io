@@ -7,8 +7,7 @@ categories:
 - programming
 - graphics
 ---
-
-Near the start of this year I had purchased the [Game Engine Black Book] by Fabien Sanglard.
+In December 2018 I had purchased the [Game Engine Black Book] by Fabien Sanglard.
 It celebrates the 25th anniversary of the release of PC Game, Doom.
 Shortly after the doom black book was released, Fabien had written a [blog post]
 covering how the opening fire effect was made for the PSX version of Doom.
