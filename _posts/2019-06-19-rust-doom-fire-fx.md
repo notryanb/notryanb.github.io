@@ -1,12 +1,14 @@
 ---
 layout: post
 title: "Rust Implementation of the Doom Fire FX"
-date: 2019-06-06
+date: 2019-06-19
 categories:
 - rust
 - programming
 - graphics
 ---
+Before starting, I would like to thank Phrohdoh and Scottmcm for reviewing this blog post and teaching me some idiomatic Rust.
+
 In December 2018 I had purchased the [Game Engine Black Book] by Fabien Sanglard.
 It celebrates the 25th anniversary of the release of PC Game, Doom.
 Shortly after the doom black book was released, Fabien had written a [blog post]
@@ -22,7 +24,7 @@ port of the JavaScript implementation.
 This post will cover creating the Doom fire effect using
 - Stable Rust (1.35.0 as of time of writing)
 - [SDL2 crate]
-- Preferrably macOS or linux (I wasn't able to get SDL2 configured on Windows properly)
+- Preferrably macOS or linux (I wasn't able to get SDL2 configured on Windows properly before working on the project)
 - [Ferris], the Rust mascot
 
 The code from my personal implementation is [located here](https://github.com/notryanb/doom_fire_fx) if want to skip the article.
@@ -46,6 +48,11 @@ The palette we're going to use is 36 colors in length ranging from *almost* blac
 We're going to put almost all of the code in the main function to get things working, as we can always refactor later.
 Perhaps I'll eventually follow up this post on how to refactor this implementation in a more *rusty* way.
 
+The first thing was want to do is create a new Rust `bin` project using [Cargo].
+In the terminal of your choice, run `cargo new doom_fire_fx --bin`
+
+[Cargo]: https://crates.io/
+
 ```rust
 const FIRE_WIDTH: u32 = 320;
 const FIRE_HEIGHT: u32 = 168;
@@ -53,44 +60,18 @@ const CANVAS_WIDTH: u32 = 800;
 const CANVAS_HEIGHT: u32 = 600;
 
 fn main() {
+    // I had the rustfmt tool format our color palette this way, 
+    // but you can view it as the following...
+    // [red, green, blue, red, green, blue, .... and so on]
     let color_palette = [
-        (0x07, 0x07, 0x07), // Dark, almost black
-        (0x1F, 0x07, 0x07),
-        (0x2F, 0x0F, 0x07),
-        (0x47, 0x0F, 0x07),
-        (0x57, 0x17, 0x07),
-        (0x67, 0x1F, 0x07),
-        (0x77, 0x1F, 0x07),
-        (0x8F, 0x27, 0x07),
-        (0x9F, 0x2F, 0x07),
-        (0xAF, 0x3F, 0x07),
-        (0xBF, 0x47, 0x07),
-        (0xC7, 0x47, 0x07),
-        (0xDF, 0x4F, 0x07),
-        (0xDF, 0x57, 0x07),
-        (0xDF, 0x57, 0x07),
-        (0xD7, 0x5F, 0x07),
-        (0xD7, 0x5F, 0x07),
-        (0xD7, 0x67, 0x0F),
-        (0xCF, 0x6F, 0x0F),
-        (0xCF, 0x77, 0x0F),
-        (0xCF, 0x7F, 0x0F),
-        (0xCF, 0x87, 0x17),
-        (0xC7, 0x87, 0x17),
-        (0xC7, 0x8F, 0x17),
-        (0xC7, 0x97, 0x1F),
-        (0xBF, 0x9F, 0x1F),
-        (0xBF, 0x9F, 0x1F),
-        (0xBF, 0xA7, 0x27),
-        (0xBF, 0xA7, 0x27),
-        (0xBF, 0xAF, 0x2F),
-        (0xB7, 0xAF, 0x2F),
-        (0xB7, 0xB7, 0x2F),
-        (0xB7, 0xB7, 0x37),
-        (0xCF, 0xCF, 0x6F),
-        (0xDF, 0xDF, 0x9F),
-        (0xEF, 0xEF, 0xC7),
-        (0xFF, 0xFF, 0xFF), // White, very hot
+        0x07, 0x07, 0x07, 0x1F, 0x07, 0x07, 0x2F, 0x0F, 0x07, 0x47, 0x0F, 0x07, 0x57, 0x17, 0x07,
+        0x67, 0x1F, 0x07, 0x77, 0x1F, 0x07, 0x8F, 0x27, 0x07, 0x9F, 0x2F, 0x07, 0xAF, 0x3F, 0x07,
+        0xBF, 0x47, 0x07, 0xC7, 0x47, 0x07, 0xDF, 0x4F, 0x07, 0xDF, 0x57, 0x07, 0xDF, 0x57, 0x07,
+        0xD7, 0x5F, 0x07, 0xD7, 0x5F, 0x07, 0xD7, 0x67, 0x0F, 0xCF, 0x6F, 0x0F, 0xCF, 0x77, 0x0F,
+        0xCF, 0x7F, 0x0F, 0xCF, 0x87, 0x17, 0xC7, 0x87, 0x17, 0xC7, 0x8F, 0x17, 0xC7, 0x97, 0x1F,
+        0xBF, 0x9F, 0x1F, 0xBF, 0x9F, 0x1F, 0xBF, 0xA7, 0x27, 0xBF, 0xA7, 0x27, 0xBF, 0xAF, 0x2F,
+        0xB7, 0xAF, 0x2F, 0xB7, 0xB7, 0x2F, 0xB7, 0xB7, 0x37, 0xCF, 0xCF, 0x6F, 0xDF, 0xDF, 0x9F,
+        0xEF, 0xEF, 0xC7, 0xFF, 0xFF, 0xFF,
     ];
 }
 ```
@@ -102,11 +83,11 @@ We will actually end up scaling the pixels to "become larger", which does a few 
 - Makes the effect appear a little more pixelated, which mimics the PSX version pretty well.
 - Less indicies to iterate over every frame
 
-The `color_palette` is an array of tuples with three members representing Red, Green, Blue hex values.
-You can take those tuples (without the `0x` prefix) and plug them into any hex-to-rgb converter to see the colors they produce.
+The `color_palette` is a flat array with every three members representing Red, Green, and Blue hex values.
+You can take those groupings of three hex numbers (minus the 0x prefix) and plug them into any hex-to-rgb converter to see the colors they produce.
 
 Our starting state should be an entirely black screen with the bottom row of pixels set to white.
-The bottom line will be where the fire originates from.
+The fire will originate from the bottom line.
 In order to do this, we need a collection of pixels, or rather a *buffer* that represents all the pixels in our fire.
 We can achieve this by creating a `Vec` with the [capacity] set to our `fire width * fire height`.
 This vec will be updated on every frame, so it must be mutable.
@@ -115,7 +96,7 @@ We have to push all the black pixels into our buffer and then update it again wi
 
 Not being used to graphics programming, the array indexing confused me when originally porting the code to Rust.
 Our pixel buffer is 1-dimensional and layed out by row starting from the top left of the image.
-Each indice will contain a number 0 through 36, which refers to a spot in our color palette tuple array.
+Each indice will contain a number 0 through 36, which refers to a RGB grouping in our color palette array.
 The coordinate `x: 0, y: 0`is the top left corner of the screen.
 As `x` increases, we're moving right and as `y` increases, we're moving towards the bottom of the screen.
 
@@ -123,36 +104,32 @@ As `x` increases, we're moving right and as `y` increases, we're moving towards 
 
 ```rust
 /*
-  Example of how a 3x3 grid works.
-  The first 3 positions pixel_buffer[0], pixel_buffer[1], pixel_buffer[2] are the top row
-  and the last 3 positions (indicies 6, 7, 8) are the bottom row set to white (index 36 in color_palette)
+    Example of how a 3x3 grid works.
+    The first 3 positions pixel_buffer[0], pixel_buffer[1], pixel_buffer[2] are the top row
+    and the last 3 positions (indicies 6, 7, 8) are the bottom row set to white 
+    (index 36 in color_palette)
 
-  [
-      0,  // { x: 0, y: 0 }
-      0,  // { x: 1, y: 0 }
-      0,  // { x: 2, y: 0 }
-      0,  // { x: 0, y: 1 }
-      0,  // { x: 1, y: 1 }
-      0,  // { x: 2, y: 1 }
-      36, // { x: 0, y: 2 }
-      36, // { x: 1, y: 2 }
-      36, // { x: 2, y: 2 }
-  ]
+    [
+        0,  // { x: 0, y: 0 }
+        0,  // { x: 1, y: 0 }
+        0,  // { x: 2, y: 0 }
+        0,  // { x: 0, y: 1 }
+        0,  // { x: 1, y: 1 }
+        0,  // { x: 2, y: 1 }
+        36, // { x: 0, y: 2 }
+        36, // { x: 1, y: 2 }
+        36, // { x: 2, y: 2 }
+    ]
 */
 
 fn main() {
     // color palette code 
     // ...
 
-    // Create the pixel buffer
-    let mut pixel_buffer: Vec<u32> = Vec::with_capacity((FIRE_WIDTH * FIRE_HEIGHT) as usize);
+    // Create the pixel buffer and set all pixels to black
+    let mut pixel_buffer = vec![0; (FIRE_WIDTH * FIRE_HEIGHT) as usize];
 
-    // Set all pixels to black
-    for _ in 0..pixel_buffer.capacity() {
-        pixel_buffer.push(0);
-    }
-
-    // Set bottom row of Pixels to white inside the pixel buffer.
+    // Set bottom row of pixels to white inside the pixel buffer.
     for i in 0..FIRE_WIDTH {
         let bottom_x_y = ((FIRE_HEIGHT - 1) * FIRE_WIDTH + i) as usize;
         pixel_buffer[bottom_x_y] = 36;
@@ -196,7 +173,7 @@ To do this we must use the formula `y * FIRE_WIDTH + x`.
         36 { x: 2, y: 2 }, <- 6. cursor sixth iteration
     ]
 */
-pub fn calculate_fire(pixel_buffer: &mut Vec<u32>) {
+pub fn calculate_fire(pixel_buffer: &mut [u8]) {
     for x in 0..FIRE_WIDTH {
         for y in 1..FIRE_HEIGHT {
             let fire_pixel_cursor = y * FIRE_WIDTH + x;
@@ -215,21 +192,19 @@ When the pixel is a color besides the darkest color in our `color_palette`, > 0 
 then we must somehow choose the next color.
 
 When our image starts out, only the bottom row is white, which means that row is hot and everything else is cold.
-Every iteration the "hot" pixels need to effect other closeby pixels by heating them up as well.
-To do this we'll randomly select a pixel close to the one we're looking at and give it a random similar color than the source pixel.
+Every iteration the "hot" pixels need to effect other nearby pixels by heating them up as well.
+To do this we'll randomly select a pixel close to the one we're looking at and give it a random color similar to the source pixel.
 This guarantees that the rows above the white one will start to turn red/orange/yellow.
 As long as that white row is there, it will feed the fire.
 Be sure to add `rand` to your `Cargo.toml` file.
 You can find [rand here](https://crates.io/crates/rand).
 
 ```rust
-extern crate rand;
-
 use rand::Rng;
 
 // ... main() {} 
 
-pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
+pub fn spread_fire(cursor: u32, pixel_buffer: &mut [u8]) {
     let pixel = pixel_buffer[cursor as usize];
 
     if pixel == 0 {
@@ -242,7 +217,7 @@ pub fn spread_fire(cursor: u32, pixel_buffer: &mut Vec<u32>) {
         let random_index = (rng.gen::<f64>() * 3.0).round() as u32 & 3; 
 
         // Adjusting the distance will change how the fire behaves
-        // by making it look like it is blowing left or right.
+        // by making the fire look like it is blowing left or right.
         let distance = cursor - random_index + 1;
         let new_index = (distance - FIRE_WIDTH) as usize;
 
@@ -269,10 +244,7 @@ default-features = false
 features = ["image"]
 
 
-
 // ----------  /src/main.rs
-extern crate sdl2;
-
 use rand::Rng;
 use sdl2::image::LoadTexture;
 use sdl2::pixels::Color;
@@ -296,7 +268,7 @@ You can add it after all the color palette and pixel buffer code.
 [texture]: https://docs.rs/sdl2/0.32.2/sdl2/render/struct.TextureCreator.html
 
 ```rust
-    // Set Up SDL Windox & Canvas
+    // Set Up SDL Window & Canvas
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
@@ -362,29 +334,29 @@ calculate the fire, write it to the fire texture, and present it back to the scr
                 calculate_fire(&mut pixel_buffer);
 
                 for (idx, pixel_cursor) in pixel_buffer.iter().enumerate() {
-                    // Each pixel is 4 bytes, so we need to offset the texture
-                    // buffer by this much.
-                    let offset = idx * 4;
-    
-                    let pixel = color_palette[*pixel_cursor as usize];
- 
-                    // Ensure the pixels are completely opaque when brighter 
-                    // than our darkest color in the palette 
-                    // Helpful when our eventual image will rise
-                    // from behind the fire
-                    let mut alpha = 255;
+                    // Our start and end cursor for getting RGB out of the color palette
+                    let start = (*pixel_cursor * 3) as usize;
+                    let end = start + 3;
 
-                    // Make transparent pixels when darker than darkest color
-                    if pixel.0 <= 0x07 && pixel.1 <= 0x07 && pixel.2 <= 0x07 {
-                        alpha = 0;
+                    match &color_palette[start..end] {
+                        [red, green, blue] => {
+                            let mut alpha = 255;
+
+                            // Ensure very dark pixels are transparent
+                            if [*red, *green, *blue].iter().all(|color| color <= &0x07) {
+                                alpha = 0;
+                            }
+
+                            // Each offset + N is another offset into 
+                            // each byte that represents that color 
+                            let offset = idx * 4;
+                            buffer[offset] = alpha as u8;
+                            buffer[offset + 1] = *blue;
+                            buffer[offset + 2] = *green;
+                            buffer[offset + 3] = *red;
+                        }
+                        _ => (), // We don't care about any other patterns...
                     }
-  
-                    // Each offset + N is another offset into 
-                    // each byte that represents that color 
-                    buffer[offset] = alpha as u8; // alpha channel
-                    buffer[offset + 1] = pixel.2 as u8; // blue channel
-                    buffer[offset + 2] = pixel.1 as u8; // green channel
-                    buffer[offset + 3] = pixel.0 as u8; // red channel
                 }
             })
             .unwrap();
@@ -400,7 +372,7 @@ calculate the fire, write it to the fire texture, and present it back to the scr
 
 Compile this as release, `cargo run --release` to see infinite flames!
 
-The first time I ran this was complete joy and I hope it was as fun for you, too.
+The first time I ran this was a complete joy and I hope it was as fun for you, too.
 
 Lets not stop there. 
 We should aim to complete the effect by having the fire eventually die down and display an image
@@ -425,6 +397,8 @@ This means the white row at the bottom will eventually go away and stop feeding 
 
 It took me a while to figure out how to get the image to display behind the fire even with the alpha set correctly,
 so we'll add in one line of code to set the blend mode of the fire texture.
+I'm not experienced with alpha blending yet, 
+so as I become more experienced using SDL2 I will update this explanation.
 
 First, lets add the image loading code for Ferris anywhere after canvas creation, but before the loop.
 
