@@ -14,6 +14,7 @@ permalink: "/:title.html"
 # Build settings
 markdown: kramdown
 highlighter: rouge
+future: true
 kramdown:
   input: GFM
   auto_ids: true
