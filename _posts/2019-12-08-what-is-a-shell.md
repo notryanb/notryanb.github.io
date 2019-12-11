@@ -82,13 +82,13 @@ The same thing? Great!
 While Nushell doesn't yet support scripting,
 you'll be able to write scripts once and use them across all your system that have Nushell.
 
-Need to make a http request to a json endpoint? 
+Need to make a http request to a json endpoint?  
 `fetch https://jsonplaceholder.typicode.com/todos/ | get title`
 
-Need to make a http request to a json endpoint and get the title data? 
+Need to make a http request to a json endpoint and get the title data?  
 `fetch https://jsonplaceholder.typicode.com/todos/ | get title`
 
-Need to turn that into json array of titles? 
+Need to turn that into json array of titles?  
 `fetch https://jsonplaceholder.typicode.com/todos/ | get title | to-json`
 
 Need to save that result?  
