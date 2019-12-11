@@ -10,20 +10,20 @@ categories:
 ### What is a Shell?
 
 A shell is command line (text) or graphical interface that lets you interact with the programs of an operating system.
-The shell program is typically the outermost layer from the operating system kernel, which is where it gets it's name.
-If you have every interacted with MacOS/Linux *terminal* or CMD and PowerShell on Windows, you're using what most users will call a shell.
+The shell program is typically the outermost layer from the operating system kernel, which is where it gets its name.
+If you have ever interacted with MacOS/Linux *terminal* or CMD and PowerShell on Windows, you're using what most users will call "the shell".
 
-Usually an operating system shell let you interact with the file system, system processes, and devices that make up the system you're on.
-In some cases, you are able to communicate with completely different machines, such as through SSH.
-Software developers and IT professional use shells for many tasks such as batch processing files, searching the file system, running custom scripts, downloading the uploading files to the internet, etc.
+An operating system shell allows you interact with programs, the file system, system processes, and devices that make up the system you're on.
+In some cases, you are able to communicate with completely different machines as over SSH, aka Secure Shell.
+Software developers and IT professional use shells for many tasks such as batch processing files, searching the file system, running custom scripts, downloading the uploading files to the internet, automating their daily workflows, and even playing games!
 
 ### Example Usage
 
-In bash shell (bourne again shell), you can interact with the file system using a command `ls`,
+In the [Bash shell](https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29) (bourne again shell), you can interact with the file system using a command `ls`,
 where it displays information about the current directory by default.
-CMD on windows provides similar functionality. 
+[Powershell](https://docs.microsoft.com/en-us/powershell/) on Windows provides users a similar functionality. 
 
-In order to get alter the way information is displayed,
+In order to alter the way information is displayed,
 you may have to provide additional input to the command,
 which is called a flag.
 For example, `ls -l` provides a "long list" format which also shows file permissions, file creation and file access information.
