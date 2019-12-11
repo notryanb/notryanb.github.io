@@ -109,5 +109,15 @@ Need to save that result?
 
 This can all be done with existing shells but not in the same concise and declarative way.
 
-Lastly, `open` an NES rom and see how nushell handles this - you'll need nushell installed with --all-features`.
+### Give it a try!
+Even if you're a staunch supporter for your favorite shell,
+I encourage you to try out Nushell.
+If you don't find it immediately useful in its current state,
+you might end up taking back some ideas to your own environment.
+
+
+...  
+...  
+...  
+Oh... if you _do_ try Nushell and installed with with `--all-features`, `open` an NES rom =).
 
