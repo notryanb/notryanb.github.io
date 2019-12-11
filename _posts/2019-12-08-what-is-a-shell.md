@@ -1,6 +1,13 @@
-# Nushell - The Cross Platform Shell
-
-## What is a Shell?
+---
+layout: post
+title: "Nushell - The Cross Platform Shell"
+date: 2019-12-10
+categories:
+- rust
+- programming
+- commandline
+---
+### What is a Shell?
 
 A shell is command line (text) or graphical interface that lets you interact with the programs of an operating system.
 The shell program is typically the outermost layer from the operating system kernel, which is where it gets it's name.
@@ -10,7 +17,7 @@ Usually an operating system shell let you interact with the file system, system 
 In some cases, you are able to communicate with completely different machines, such as through SSH.
 Software developers and IT professional use shells for many tasks such as batch processing files, searching the file system, running custom scripts, downloading the uploading files to the internet, etc.
 
-## Example Usage
+### Example Usage
 
 In bash shell (bourne again shell), you can interact with the file system using a command `ls`,
 where it displays information about the current directory by default.
@@ -36,7 +43,7 @@ all you need is the manual page by typing the executable preceded by `man`.
 For example `man zip`.
 Similar functionality can be achieved in Powershell by using `Get-Command`.
 
-## Manipulating Data
+### Manipulating Data
 
 In the previous section we saw how a user may list the available commands or executables they can run via their shell.
 If you've been trying these on your own system,
@@ -60,7 +67,7 @@ Many shells offer a way to write scripts so you can automate entire workflows or
 I won't go into detail about how they differ among shells, as they ALL differ somewhat.
 
 
-## The Future of Shells
+### The Future of Shells
 I think a fair number of developers probably have to work across multiple operating systems whether their position requires it or they enjoy using a different OS for personal use than at work.
 Having to maintain multiple shell environments can be tedious and error prone even if it is fun to learn the internals of all of them.
 A recent project, [Nushell](https://www.nushell.sh/) aims to solve some of these issues.
@@ -70,7 +77,7 @@ although development seems to be going at a rapid pace with a 3-week release cyc
 I won't go over the details for how to get started, 
 because [Nushell already offers](https://book.nushell.sh/) a helpful book.
 
-## Nushell Examples
+### Nushell Examples
 Lets start off with the typlical `ls` example.
 Nushell offers its own version of `ls` which you can learn about by using the help command `help ls`.
 Using only `ls` you'll see a table returned to you with some nice default information.
@@ -94,7 +101,7 @@ Need to turn that into json array of titles?
 Need to save that result?  
 `fetch https://jsonplaceholder.typicode.com/todos/ | get title | to-json | save titles.json`
 
-This can all be done with existing shells but not in a the same concise and declarative way.
+This can all be done with existing shells but not in the same concise and declarative way.
 
 Lastly, `open` an NES rom and see how nushell handles this - you'll need nushell installed with --all-features`.
 
