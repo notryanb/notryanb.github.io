@@ -34,12 +34,12 @@ You'll find that the cmdlet is `Get-ChildItem`.
 If you use `alias ls` in Powershell,
 you will see the command is an alias for the Get-ChildItem.
 
-There are plenty of programs that operating systems have to offer.
+There are plenty of executable programs that operating systems have to offer.
 For Linux/MacOS,
 you most likely have the path `/usr/bin` in your `PATH` variable.
 Try `ls -l /usr/bin` to see a list of executables which you can run from the command line.
 If you're curious about any of them,
-all you need is the manual page by typing the executable preceded by `man`.
+all you need is the manual page by typing the executable name preceded by `man`.
 For example `man zip`.
 Similar functionality can be achieved in Powershell by using `Get-Command`.
 
@@ -47,13 +47,13 @@ Similar functionality can be achieved in Powershell by using `Get-Command`.
 
 In the previous section we saw how a user may list the available commands or executables they can run via their shell.
 If you've been trying these on your own system,
-you may have noticed an overwhelming amoutn of output.
+you may have noticed an overwhelming amount of output.
 Sometimes you may need all of it,
 but often you might want a subset of the data.
 If you wanted to get all the aliases out of `Get-Command`,
 you can use `Get-Command | Where-Object {$_.CommandType -eq 'alias'}`.
 While this is verbose,
-you you can figure out how to modify the command by changing the field and the comparison operator.
+you can figure out how to modify the command by changing the field and the comparison operator.
 On Linux/MacOS you can use the `alias` command to list them all,
 but what if you wanted to find all the symlinks in `/usr/bin`?
 One way to do this is to _pipe_ the output of the `ls` program into another one like `grep`.
@@ -64,21 +64,27 @@ Try `ls -la /usr/bin | grep "\->"`
 These two approaches both work well enough, but they're quite different.
 Powershell gives us data in a table-like format while bash does offer data in table like format, but we have to think of how to parse each line.
 Many shells offer a way to write scripts so you can automate entire workflows or even design programs.
-I won't go into detail about how they differ among shells, as they ALL differ somewhat.
+I won't go into detail about how they differ among shells, as they all offer their own nuanced scripting languages.
 
 
 ### The Future of Shells
-I think a fair number of developers probably have to work across multiple operating systems whether their position requires it or they enjoy using a different OS for personal use than at work.
+I think a fair number of developers probably have to work across multiple operating systems whether their position requires it or they enjoy using a different OS for personal use outside of work.
 Having to maintain multiple shell environments can be tedious and error prone even if it is fun to learn the internals of all of them.
 A recent project, [Nushell](https://www.nushell.sh/) aims to solve some of these issues.
 Nushell is a cross-platform shell written in Rust which works on Windows, MacOS, and Linux.
 It is still in the very early stages and only a few months old as of the time of this writing,
 although development seems to be going at a rapid pace with a 3-week release cycle.
+Aside from the cross-platform aspect of Nushell,
+one of the more appealing features is how Nushell treats data.
+Instead of treating all data as raw text,
+Nushell takes some inspiration of Powershell and treats data as structured tables or objects.
+This enables Nushell to support a rich command and plugin system to manipulate data in very useful and declarative ways.
+
+### Nushell Examples
 I won't go over the details for how to get started, 
 because [Nushell already offers](https://book.nushell.sh/) a helpful book.
 
-### Nushell Examples
-Lets start off with the typlical `ls` example.
+We can start off with the typical `ls` example.
 Nushell offers its own version of `ls` which you can learn about by using the help command `help ls`.
 Using only `ls` you'll see a table returned to you with some nice default information.
 Do you want to find all the symlinks in your `/usr/bin` directory?
