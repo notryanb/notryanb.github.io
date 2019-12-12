@@ -38,7 +38,7 @@ That particular flag will work in Bash and most other Bash inspired shells, but 
 
 Powershell provides a similar features in the form of a cmdlet, pronounced _command-let_.
 You can try `ls` in Powershell and it will work, but also try `man ls` to get the manual page.
-You'll find that the cmdlet is actaully named `Get-ChildItem`.
+You'll find that the cmdlet is actually named `Get-ChildItem`.
 If you use `alias ls` in Powershell,
 you will see the command is an alias for the Get-ChildItem.
 
@@ -66,7 +66,7 @@ but often you might want a subset of the data.
 We'll continue with `ls`,
 as it is fairly simple to work with.
 In Bash, if you want to `ls` only directories,
-or in other words, _filter by directory_,
+or in other words, _filter entries by the type directory_,
 then you may use the command `ls -d */`.
 The logic behind this is that the `-d` flag will output the / character after a directory and then we're using a glob to match anything that ends with the /.
 If you're in powershell, you can take advantage of the `-Directory` flag.
@@ -86,6 +86,7 @@ Shell programs often output data via standard-out allowing you to continue this 
 
 
 ### The Future of Shells
+Many of the popular shells have reached maturity and are industry standards, but like all software, they have their drawbacks.
 I think a fair number of developers probably have to work across multiple operating systems whether their position requires it or they enjoy using a different OS for personal use outside of work.
 Having to maintain multiple shell environments can be tedious and error prone even if it is fun to learn the internals of all of them.
 A recent project, [Nushell](https://www.nushell.sh/) aims to solve some of these issues.
@@ -95,7 +96,7 @@ although development seems to be going at a rapid pace with a 3-week release cyc
 Aside from the cross-platform aspect of Nushell,
 one of the more appealing features is how Nushell treats data.
 Instead of treating all data as raw text,
-Nushell takes some inspiration of Powershell and treats data as structured tables or objects.
+Nushell takes some inspiration from Powershell and treats data as structured tables or objects.
 This enables Nushell to support a rich command and plugin system to manipulate data in very useful and declarative ways.
 
 ### Nushell Examples
@@ -108,10 +109,34 @@ Using only `ls` you'll see a table returned to you with some nice default inform
 Do you want to find all the symlinks in your `/usr/bin` directory?
 `ls /usr/bin | where type == Symlink`.
 Okay, now what about all the symlinks in your `C:\Users` directory on Windows?
-`ls /usr/bin | where type == Symlink`.
-The same thing? Great!
-While Nushell doesn't yet support scripting,
-you'll be able to write scripts once and use them across all your system that have Nushell.
+`ls C:\Users | where type == Symlink`.
+The same thing? Well, the same command aside from the directory... This is Great!
+
+Once you invest the time into learning Nushell,
+you'll be able to use the same commands it on any system that is running it.
+Our example above using `ls` is actually using the `ls` command that is inside of Nushell and not the "native" `ls` on your system.
+If you prefer the version your OS has, you can always escape the command by prefixing it with `^`, as in `^ls`.
+From there Nushell can still take advantage of the output by piping the output of the native command into other Nushell commands.
+
+As mentioned earlier, Nushell is still quite early in its development.
+While it has [many useful features](https://www.nushell.sh/documentation.html), it does not yet support scripting or aliasing of commands.
+As Nushell matures, many of the standard behaviors you might expect from a shell will be included ... and maybe more!?
+
+
+Nushell offers a plugin system in addition to its commands.
+A Nushell plugin is meant to be optional and can be installed in addition to the "core" of Nushell.
+Plugins can be written in many languages as long as they adhere to the plugin interface.
+There already exist plugins written in Rust, Ruby, Python, and more!
+Plugins can be offered as operating system specific programs like something that interacts with an OS specific API or even augment existing programs like SQLite, which is already supported!
+
+My daily workflow involves testing REST APIs.
+I am able to use the `fetch` command offered by nushell to download data and turn it into any format I want.
+In addition to this, I can take files in one format, convert to another and then `post` to a url.
+I frequently have to take CSV files and send them to an endpoint.
+With Nushell I can open a CSV file,
+turn it into a JSON payload,
+and send it all in one line.
+There are examples of this in the [Nushell Cookbook](https://github.com/nushell/cookbook#http)
 
 Need to make a http request to a json endpoint?  
 `fetch https://jsonplaceholder.typicode.com/todos/`
