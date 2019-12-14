@@ -9,7 +9,7 @@ categories:
 ---
 ### What is a Shell?
 
-A shell is command-line (text input/output) or graphical interface that lets you interact with the programs of an operating system.
+A shell is a command-line (text input/output) or graphical interface that lets you interact with the programs of an operating system.
 The shell program is typically the layer outside the operating system's kernel, which is where it gets the name "shell".
 If you have ever interacted with MacOS/Linux *terminal* or CMD and PowerShell on Windows, you're using what most users will call "the shell".
 Technically, the program that opens up the window you're typing into is most likley a terminal emulator,
