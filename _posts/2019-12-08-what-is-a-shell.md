@@ -102,7 +102,7 @@ Nushell takes some inspiration from PowerShell and treats data as structured tab
 This enables Nushell to support a rich command and plugin system to manipulate data in very useful and declarative ways.
 
 ### Nushell Examples
-I won't go over the details for how to get with Nushell, 
+I won't go over the details for how to get started with Nushell, 
 because [it already offers](https://book.nushell.sh/) a helpful book.
 
 We can start off with the typical `ls` example.
