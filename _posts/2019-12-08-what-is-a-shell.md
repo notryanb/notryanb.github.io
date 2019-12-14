@@ -195,5 +195,5 @@ you might end up taking back some ideas to your own environment.
 ...  
 Oh... if you _do_ try Nushell and installed from the current `master` branch with `--features=stable`, `open` a JPEG or NES rom =).
 
-Thank you to thegedge and jonathandturner for helping review this post.
+Thank you to **thegedge** and **jonathandturner** for helping review this post.
 
