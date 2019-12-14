@@ -26,8 +26,8 @@ There are many others (I'm sorry if I didn't mention your favorite one!), but li
 
 ### Example Usage
 
-In the [Bash shell](https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29), 
-you can list directory contents using the command `ls.
+In the [Bash shell](https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29),
+you can list directory contents using the command `ls`.
 It displays information about the current directory by default.
 [PowerShell](https://docs.microsoft.com/en-us/PowerShell) on Windows provides users a similar functionality using the same `ls` command.
 
