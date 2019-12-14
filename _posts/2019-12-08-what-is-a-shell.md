@@ -20,7 +20,7 @@ system processes, devices that make up the system you're on, and much more.
 In some cases, you are able to communicate with completely different machines as over SSH, aka Secure Shell.
 Software developers and IT professional use shells for many tasks such as batch processing files, searching the file system, running custom scripts, downloading the uploading files to the internet, automating their daily workflows, and even playing games!
 
-Some examples of well known command-line shells are Bourne Shell (sh), Bash (Bourne Agains Shell), Zsh, Fish, PowerShell, Korn Shell, and csh,
+Some examples of well known command-line shells are Bourne Shell (sh), Bash (Bourne-again Shell), Zsh, Fish, PowerShell, Korn Shell, and csh,
 while an example of a graphical (GUI or desktop) shell is Windows.
 There are many others (I'm sorry if I didn't mention your favorite one!), but listing them all would belabor the point.
 
